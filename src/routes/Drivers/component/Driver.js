@@ -1,25 +1,17 @@
 import React from 'react';
 import {View, 
     Text,
-    Modal,
     Alert, 
-    Dimensions,
-    TouchableHighlight, 
+    Dimensions, 
     TouchableOpacity,
     ActivityIndicator,
     StyleSheet,
-    TextInput
 } from 'react-native';
-// import MapContainer from './MapContainer';
-import {Container,Header, Left, Body, Right, Button,Footer, FooterTab,} from 'native-base';
-// import Fare from './Fare';
-// import BooknowBtn from './FloatingActionBtn';
+import {Container,Button,Footer, FooterTab,} from 'native-base';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { Actions } from 'react-native-router-flux';
-import stylesh from '../../Home/components/styles';
-// import { TextInput,DefaultTheme } from 'react-native-paper';
 import AsyncStorage from '@react-native-community/async-storage';
-import { getUrl, getUrlExpressApi } from "../../config";
+import { getUrl } from "../../config";
 import MapView,{PROVIDER_GOOGLE,Marker,Polyline} from 'react-native-maps';
 import apiKey from "../../google_api_key";
 import PolyLine from '@mapbox/polyline';
@@ -205,39 +197,38 @@ class Driver extends React.Component {
     
   }
     
-    //Logoutapp
-    logout = async () => {
+  //Logoutapp
+  logout = async () => {
 
-        let mobile = await AsyncStorage.getItem("mobile_driver");
-        let token = await AsyncStorage.getItem("token_driver");
-    
-        await fetch(`${getUrl}logoutapp.php`,{
-                method: "POST",
-                headers:{
-                    "Accept": "application/json",
-                    "Content-type": "application/json"
-                },
-                body:JSON.stringify({
-                    mobile:mobile,
-                    token:token
-                })
-            })
-            .then((response) => response.json())
-            .then((responseJson) => {
-                if(responseJson === "ok"){
-                    AsyncStorage.removeItem("mobile_driver");
-                    AsyncStorage.removeItem("userInfos");
-                    AsyncStorage.removeItem("token_driver");
-                    Actions.accueil();
-                }else{
-                  Alert.alert("Failed",JSON.stringify(responseJson)),[{text: "Okay"}];
-                }
-            }).catch((error) => {
-              alert("Try later or check your network!");
-              console.error(error);
-          });
-    }
-    
+      let mobile = await AsyncStorage.getItem("mobile_driver");
+      let token = await AsyncStorage.getItem("token_driver");
+  
+      await fetch(`${getUrl}logoutapp.php`,{
+              method: "POST",
+              headers:{
+                  "Accept": "application/json",
+                  "Content-type": "application/json"
+              },
+              body:JSON.stringify({
+                  mobile:mobile,
+                  token:token
+              })
+          })
+          .then((response) => response.json())
+          .then((responseJson) => {
+              if(responseJson === "ok"){
+                  AsyncStorage.removeItem("mobile_driver");
+                  AsyncStorage.removeItem("token_driver");
+                  Actions.accueil();
+              }else{
+                Alert.alert("Failed",JSON.stringify(responseJson)),[{text: "Okay"}];
+              }
+          }).catch((error) => {
+            alert("Try later or check your network!");
+            console.error(error);
+        });
+  }
+  
     render(){
         
         let marker = null;
@@ -301,7 +292,7 @@ class Driver extends React.Component {
             </View>
             
             <Footer style={{marginTop:'auto'}}>
-              <FooterTab style={[stylesh.footerContainer]} >
+              <FooterTab style={[styles.footerContainer]} >
                       
                     <Button vertical active onPress={() => Actions.driver()}>
                     <Icon name="home" size={20} color={"#F89D29"} />
@@ -376,6 +367,10 @@ const styles = StyleSheet.create({
   findDriverRiderText: {
     fontSize:20,
     color:'#fff',
-  }
+  },
+  footerContainer:{
+    backgroundColor:"#fff",
+    // marginTop:'auto'
+  },
 
 });

@@ -4,14 +4,21 @@ import {
     View,
     ScrollView,
     Alert,
-    TextInput,
     Dimensions,
-    TouchableHighlight,
-    Image,
-    AsyncStorage
+    TouchableOpacity
 } from 'react-native';
-import {Container,Header, Left, Body, Right, Button,Footer, FooterTab} from 'native-base';
-import styles from '../../Home/components/styles';
+import {
+  Container,
+  Header, 
+  Left, 
+  Body, 
+  Right, 
+  Button,
+  Footer, 
+  FooterTab,
+  Content
+} from 'native-base';
+import styles from '../../styles';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { Actions } from 'react-native-router-flux';
 import { getUrl} from '../../config';
@@ -30,21 +37,25 @@ class RequestForRides extends React.Component {
         <Header style={{backgroundColor:"#11A0DC"}} 
           iosBarStyle="light-content"
           androidStatusBarColor="#F89D29">
-            <Left></Left>
+            <Left>
+              <TouchableOpacity 
+                  onPress={() =>Actions.driver()}
+                  opacity="0.6"
+              >
+                  <Icon name="chevron-left" style={[styles.icon,{color: '#FFFFFF'}]} />
+              </TouchableOpacity>
+            </Left>
             <Body>
-                <Text style={styles.headerText}>Request For Riders</Text>                        
+                <Text style={styles.headerText}>Assigned Request Driver</Text>                        
             </Body>
-            <Right> 
-                <Button transparent onPress={() => this.logout()}> 
-                    <Icon name="power-off" style={styles.icon}/>
-                </Button>
-            </Right>
         </Header>
 
         <View style={styles.Container}>
-            
-          <Text>Request For Riders</Text>
-
+          <ScrollView>
+            <Content>
+              <Text>All request Assigned to the driver</Text>
+            </Content>
+          </ScrollView>
         </View>
         
         <Footer style={{marginTop:'auto'}}>
