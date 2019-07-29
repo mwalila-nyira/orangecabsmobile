@@ -4,14 +4,12 @@ import {
     View,
     ScrollView,
     Alert,
-    TextInput,
     Dimensions,
-    TouchableHighlight,
+    TouchableOpacity,
     Image,
-    AsyncStorage
 } from 'react-native';
-import {Container,Header, Left, Body, Right, Button,Footer, FooterTab} from 'native-base';
-import styles from '../../Home/components/styles';
+import {Container,Header, Left, Body, Right,Content, Button,Footer, FooterTab} from 'native-base';
+import styles from '../../styles';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { Actions } from 'react-native-router-flux';
 import { getUrl} from '../../config';
@@ -30,25 +28,27 @@ class MessageDriver extends React.Component {
         <Header style={{backgroundColor:"#11A0DC"}} 
           iosBarStyle="light-content"
           androidStatusBarColor="#F89D29">
-            <Left></Left>
+            <Left>
+              <TouchableOpacity 
+                onPress={() =>Actions.driver()}
+                opacity="0.6"
+              >
+                  <Icon name="chevron-left" style={[styles.icon,{color: '#FFFFFF'}]} />
+              </TouchableOpacity>
+            </Left>
             <Body>
                 <Text style={styles.headerText}>Message Driver </Text>                        
             </Body>
-            <Right> 
-                <Button transparent onPress={() => this.logout()}> 
-                    <Icon name="power-off" style={styles.icon}/>
-                </Button>
-            </Right>
         </Header>
 
         <View style={styles.Container}>
-            
-          <View style={styles.container}>
-            <Text>Message Driver</Text>
-          </View>
-          
-          
+          <ScrollView>
+            <Content>
+              <Text>All message driver</Text>
+            </Content>
+          </ScrollView>
         </View>
+        
         <Footer style={{marginTop:'auto'}}>
             <FooterTab style={[styles.footerContainer]} >
                 

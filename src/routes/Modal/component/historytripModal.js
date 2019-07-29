@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import {Content, Card, CardItem,Left,Right,Body,Button,Header} from 'native-base';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import styles from '../../Home/components/styles';
+import styles from '../../styles';
 import moment from 'moment';
 import { getUrl,} from "../../config";
 import { Actions } from 'react-native-router-flux';

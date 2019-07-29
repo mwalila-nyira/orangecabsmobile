@@ -104,6 +104,10 @@ export default {
       color:"#fff",
       // fontSize:20
   },
+  headerTextDriver:{
+    color:"##333",
+    // fontSize:20
+},
   // logo: {
   //     width:38,
   //     height:30,

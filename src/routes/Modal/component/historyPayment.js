@@ -80,7 +80,7 @@ class HistoryPaymentModal extends Component {
                         
                             <Content>
                               <Card>
-                                <CardItem style={{paddingTop:10,paddingBottom:25}}>
+                                <CardItem style={{paddingTop:10,paddingBottom:35}}>
                                   <Body>
                                   <Text style={{fontWeight:'bold'}} >From: {item.departure}</Text>
                                   <Text style={{fontWeight:'bold',marginTop:2,marginLeft:0}}>To: {item.destination}</Text>

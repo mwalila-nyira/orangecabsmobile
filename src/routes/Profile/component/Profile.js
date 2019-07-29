@@ -1,8 +1,23 @@
 import React, { Component } from 'react';
-import {TouchableOpacity, ActivityIndicator,Image,} from 'react-native';
-import { Container, Header, Content, Card, CardItem, Text, Body, Left, Right,Thumbnail } from 'native-base';
+import {
+    TouchableOpacity, 
+    ActivityIndicator,
+    Image,
+} from 'react-native';
+import { 
+    Container, 
+    Header, 
+    Content, 
+    Card, 
+    CardItem, 
+    Text, 
+    Body, 
+    Left, 
+    Right,
+    Thumbnail 
+} from 'native-base';
 const avatars = require("../../../../assets/contacts/userprofile.jpg")
-const editicon = require("../../../../assets/contacts/iconpencil.png");;
+const editicon = require("../../../../assets/contacts/iconpencil.png");
 import AsyncStorage from '@react-native-community/async-storage';
 import { getUrl} from "../../config";
 

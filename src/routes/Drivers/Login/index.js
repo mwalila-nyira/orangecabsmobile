@@ -6,16 +6,17 @@ import {
     ScrollView,
     Alert,
     Dimensions,
-    TouchableHighlight,
+    TouchableOpacity,
     Image,
     KeyboardAvoidingView,
-    Keyboard
+    Keyboard,
+    ActivityIndicator
 } from 'react-native';
 
-import styles from './LoginStyles';
+import styles from '../../styles';
 import Loading from 'react-native-whc-loading';
 import { sha256 } from 'react-native-sha256';
-import { TextInput,DefaultTheme } from 'react-native-paper';
+import { TextInput } from 'react-native-paper';
 import { Actions } from 'react-native-router-flux';
 import AsyncStorage from '@react-native-community/async-storage';
 import { getUrl } from "../../config";
@@ -33,6 +34,7 @@ class LoginDriver extends React.Component {
             username:'',
             token:'',
             driver:'Driver',
+            isLoading: false,
         };
     }
 
@@ -52,7 +54,6 @@ class LoginDriver extends React.Component {
         let mobile = await AsyncStorage.getItem('mobile_driver');
         let token = await AsyncStorage.getItem('token_driver');
         if(token !== null && mobile !== null){
-            // this.props.navigation.navigate("Bookings");
             Actions.driver();
         }
     }
@@ -103,14 +104,13 @@ class LoginDriver extends React.Component {
                         style={[styles.textInputStyle, {marginTop: 10}]}
                         label="mobile number"
                         underlineColor="#11A0DC"
-                        mode="outlined"
+                        mode="flat"
                         returnKeyType= "go"
                         autoCapitalize= "none"
                         keyboardType='numeric'
                         maxLength={10} 
                         editable="true" 
                         onChangeText={(text)=> this.onChanged(text)}
-                        editable="true"
                         value={this.state.userMobile}
                         theme={{ colors: { placeholder: '#777', text: '#333', primary: '#11A0DC',underlineColor:'#11A0DC',background : '#fff'}}}
                     />
@@ -118,7 +118,8 @@ class LoginDriver extends React.Component {
                     <TextInput
                         style={[styles.textInputStyle, {marginTop: 10}]}
                         label="Password"
-                        mode="outlined"
+                        mode="flat"
+                        underlineColor="#11A0DC"
                         returnKeyType= "go"
                         autoCapitalize= "none"
                         secureTextEntry= {true}
@@ -129,32 +130,39 @@ class LoginDriver extends React.Component {
                         theme={{ colors: { placeholder: '#777', text: '#333', primary: '#11A0DC',underlineColor:'#11A0DC',background : '#fff'}}}
                     />
     
-                    <TouchableHighlight style={styles.button}
+                    <TouchableOpacity style={styles.button}
                         underlayColor="transparent"
                         onPress={() => this._login()}
+                        opacity="0.6"
                     >
                         <Text style={styles.buttonText}>Log In</Text>
-                    </TouchableHighlight>
+                    </TouchableOpacity>
+                    {this.state.isLoading == true && <ActivityIndicator size="large" color="#F89D29" />}
     
-                    <TouchableHighlight style={styles.buttonSignup}
+                    <TouchableOpacity style={styles.buttonSignup}
                         underlayColor={'transparent'}
                         onPress={() => Alert.alert('Info','Please! Contact the administrator for information!')}
+                        opacity="0.6"
                     >
                     <Text style={[styles.buttonTextSignup, {color: '#6D6E70'}]}>Forgot Password?</Text>
-                    </TouchableHighlight>
+                    </TouchableOpacity>
     
-                    <TouchableHighlight style={styles.buttonSignup}
+                    <TouchableOpacity style={styles.buttonSignup}
                         underlayColor={'transparent'}
                         onPress={() => Alert.alert('Info','Please! Contact the administrator for information!')}
+                        opacity="0.6"
                     >
                     <Text style={[styles.buttonTextSignup, {color: '#6D6E70'}]}>Don't have account? Click here</Text>
-                    </TouchableHighlight>
-                    <TouchableHighlight style={styles.buttonSignup}
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity style={styles.buttonSignup}
                     underlayColor={'transparent'}
                     onPress={() => Actions.accueil()}
+                    opacity="0.6"
                     >
                     <Text style={[styles.buttonTextSignup, {color: '#6D6E70'}]}>Go Back</Text>
-                    </TouchableHighlight>
+                    </TouchableOpacity>
+                    
                     <View style={styles.viewTextRights}>
                     <Text style={styles.textRights}>© 2018 All Rights Reserved | Orangecabs</Text>
                     </View>
@@ -162,16 +170,6 @@ class LoginDriver extends React.Component {
                 </View>
                 </KeyboardAvoidingView>
 
-                <Loading 
-                    ref="loading"
-                    // image={require('../path/imagename.png')}
-                    // backgroundColor='#ffffffF2'
-                    borderRadius={5}
-                    size={70}
-                    imageSize={40}
-                    indicatorColor='#11A0DC'
-                    easing={Loading.EasingType.ease}
-                />
             </ScrollView>
             </View>
 
@@ -180,32 +178,30 @@ class LoginDriver extends React.Component {
 
     //login precess
     _login = async () => {
-            
+         this.setState({isLoading:true})   
         const {userMobile,userPassword,token} = this.state;
         if (this.state.userMobile == '') { 
+            this.setState({isLoading:false});
           Alert.alert('Failed', 'mobile number is required'),[
             {text: 'Okay'},
           ];
           return;
-          this.refs.loading.close();
         }
     
         if(userMobile.length !== 10){
-            
+            this.setState({isLoading:false});
             alert("Mobile number must contain 10 numbers"),[
                 {text: 'Okay'},
                 ];
                 return;
-            this.refs.loading.close();
         }
         
         if (userPassword == '') {
-            
+            this.setState({isLoading:false});
           Alert.alert('Failed', 'Password is required'),[
             {text: 'Okay'},
           ];
           return;
-          this.refs.loading.close();
         }
 
         try {
@@ -224,25 +220,27 @@ class LoginDriver extends React.Component {
             .then((response) => response.json())
             .then((responseJson) => {
                 if(responseJson === 'ok'){
-                    // alert(JSON.stringify(responseJson));
-                    // Alert.alert('Success','Welcome back'+username+'!'),[{text:'Okay'}];
                     
-                    AsyncStorage.setItem('mobile_driver',userMobile);
-                    
-                    AsyncStorage.setItem('token_driver',token);
-                    // AsyncStorage.setItem('driver',true);
-                    // this.props.navigation.navigate("Bookings");
-                    Actions.driver();
+                    setTimeout(() => {
+                        
+                        this.setState({isLoading:false});
+                        AsyncStorage.setItem('mobile_driver',userMobile);
+                        AsyncStorage.setItem('token_driver',token);
+                        Actions.driver();
+                    }, 2000);
 
                 }else{
+                    this.setState({isLoading:false});
                     Alert.alert('Failed',JSON.stringify(responseJson)),[{text: 'Okay'}];
                 }  
             })
             .catch((error) => {
+                this.setState({isLoading:false});
                 alert("Try later or check your network!");
                 console.error(error);
             });
         } catch (error) {
+            this.setState({isLoading:false});
             console.log(error);
         }
     }
