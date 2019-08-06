@@ -6,9 +6,25 @@ import {
     Alert,
     TouchableOpacity,
     KeyboardAvoidingView,
-    Keyboard
+    Keyboard,
+    Image,
+    CheckBox
 } from 'react-native';
-import {Container,Button,Footer, FooterTab,InputGroup, Input, CardItem,Content, Card, } from 'native-base';
+import {
+    Container,
+    Button,
+    Footer, 
+    FooterTab,
+    InputGroup, 
+    Input, 
+    CardItem,
+    Content, 
+    Card,
+    ListItem,
+    Body,
+    Right,
+    Left
+ } from 'native-base';
 import styles from '../../styles';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { Actions } from 'react-native-router-flux';
@@ -18,9 +34,14 @@ import { getUrl, getUrlExpressApi} from "../../config";
 import moment from 'moment';
 import { ActivityIndicator } from 'react-native-paper';
 
+//socket io
+import socketIo from 'socket.io-client';
+import { tsThisType } from '@babel/types';
 
-//Send mail with nodemailer
-// const nodemailer = require("nodemailer"); 
+const uncheckedicon = require("../../../../assets/contacts/uncheckedcheckbox.png");
+
+const checkedicon = require("../../../../assets/contacts/checkedcheckbox.png");
+
 
 class Booknow extends React.Component {
 
@@ -35,10 +56,26 @@ class Booknow extends React.Component {
         token:'',
         status:'unpaid',
         isLoading: false,
-        isCancelled:false
+        isCancelled:false,
+        
+        paymentMethod:['creditCard','cash'],
+        checked:0,
+        //response request to send to the driver
+        dataResponse:[],
+        
       };
+      this.handlePaymentOption = this.handlePaymentOption.bind(this);
     }
+    
 
+    componentDidMount(){
+        let that = this;
+        that.setState({
+            //Setting the value of the date time
+            datetimepicklocation:moment().format('YYYY-MM-DD HH:mm')
+
+        });
+    }
     onChanged(text){
         let newText = '';
         let numbers = '0123456789';
@@ -74,6 +111,11 @@ class Booknow extends React.Component {
             
         });    
     }
+    
+    handlePaymentOption =  (key) => {
+        // alert(key);
+        this.setState({checked:key});
+    }
 
     render(){
         return(
@@ -101,14 +143,44 @@ class Booknow extends React.Component {
                                 
                             </CardItem>
                         </Card>
+                        
+                        <ListItem>
+                            <Body>
+                            <Text>Choose your payment method</Text>
+                            </Body>
+                        </ListItem>
+                        <ListItem>
+                            {this.state.paymentMethod.map((method,index)=>{
+                               return(    
+                                    <Body>
+                                    {this.state.checked == index ? 
+                                        <TouchableOpacity 
+                                            key={index}
+                                            style={styles.btn}   
+                                        >
+                                            <Image source={checkedicon} />
+                                            <Text >{method}</Text>
+                                        </TouchableOpacity>
+                                        :
+                                        <TouchableOpacity
+                                            key={index}
+                                            style={styles.btn}
+                                            onPress={()=> this.handlePaymentOption(index)}   
+                                        >
+                                            <Image source={uncheckedicon} />
+                                            <Text >{method}</Text>
+                                        </TouchableOpacity>
+                                    }
+                                    </Body>
+                               )
+                            })}
+                        </ListItem>
                     </Content>
 
                     <View style={styles.formContainer}>
                         <InputGroup>
                             <Input
                                 style={styles.textInputStyle}
-                                placeholder="Select date and time pick up"
-                                // returnKeyType= {'next'}
                                 autoCapitalize= "none"
                                 autoCorrect= {false}
                                 onChangeText={(datepicklocation) => this.setState({datepicklocation})}
@@ -132,7 +204,7 @@ class Booknow extends React.Component {
                         <InputGroup>
                             <Input
                                 style={styles.textInputStyle}
-                                placeholder="Amount of riders"
+                                placeholder="Number of riders"
                                 keyboardType='numeric'
                                 returnKeyType= {'next'}
                                 autoCapitalize= "none"
@@ -168,7 +240,7 @@ class Booknow extends React.Component {
                             {this.state.isLoading == true && 
                                 <ActivityIndicator size="large" color="#F89D29" />}
 
-                            <TouchableOpacity style={styles.buttonSignup}
+                            <TouchableOpacity style={[styles.buttonSignup,{marginBottom:10}]}
                                 underlayColor={'transparent'}
                                 onPress={() => this._cancelBook()}
                                 opacity="0.6"
@@ -179,12 +251,9 @@ class Booknow extends React.Component {
                                 <ActivityIndicator size="large" color="#F89D29" />}
 
                         </View>
-
                 </KeyboardAvoidingView>
-                </ScrollView>
-            </View>
-            
-            <Footer style={{marginTop:10}}>
+                
+                <Footer style={{marginTop:10}}>
                     <FooterTab style={styles.footerContainer} >
 
                         <Button vertical onPress={() => Actions.help()}>
@@ -198,8 +267,11 @@ class Booknow extends React.Component {
 
                     </FooterTab>
 		        </Footer>
-            </Container>
-        );
+                
+            </ScrollView>
+        </View>      
+    </Container>
+    );
     }
 
     _cancelBook = async () =>{
@@ -212,6 +284,7 @@ class Booknow extends React.Component {
     }
 
     _book = async () =>{
+        // alert("Date: "+this.state.datetimepicklocation);
         this.setState({isLoading:true});
         
         let mobile = await AsyncStorage.getItem('mobile');
@@ -266,23 +339,50 @@ class Booknow extends React.Component {
                       pickuplongitude:this.props.requestRide.pickUpLocationLng,
                       dropofflatitude:this.props.requestRide.dropoffLocationLat,
                       dropofflongitude:this.props.requestRide.dropoffLocationLng,
-                      status:this.state.status
+                      status:this.state.status,
+                      paymentmethod:this.state.checked
                 })
       
             })
             .then((response) => response.json())
             .then((responseJson) => {
                 if(responseJson === 'ok'){  
-                //   setTimeout(() => {
-                      this.setState({isLoading:false});
+                      this.setState({ 
+                          dataResponse:{
+                            pickup:this.props.requestRide.pickUpLocation,
+                            dropoff: this.props.requestRide.dropoffLocation,
+                            distance:this.props.requestRide.distanceInKm,
+                            duration:this.props.requestRide.duration,
+                            price:this.props.requestRide.price,
+                            token:token,
+                            mobile:mobile,
+                            nameofrider: this.state.nameofonerider,
+                            amountofrider:this.state.amountofrider,
+                            datePicker: this.state.datetimepicklocation,
+                            pickuplatitude:this.props.requestRide.pickUpLocationLat,
+                            pickuplongitude:this.props.requestRide.pickUpLocationLng,
+                            dropofflatitude:this.props.requestRide.dropoffLocationLat,
+                            dropofflongitude:this.props.requestRide.dropoffLocationLng,
+                            status:this.state.status,
+                            paymentmethod:this.state.checked
+                        },
+                        isLoading:false,
+                        });
                       Alert.alert(
                           "Success",
                           "The notification has been sent! Contact you after you pay for your journey!" 
                       );
-                      
-                       Actions.viewtrip();
-                       
-                    // },2000);  
+                     //   alert(this.state.dataResponse); 
+                     
+                      //socketIo connect via socket io and send data for request taxi
+                      const socket = socketIo.connect(`${getUrlExpressApi}:3000`);
+                        socket.on("connect", () => {
+                            console.log("Client connected"); 
+                            //request a taxi
+                            socket.emit("taxiRequest",this.state.dataResponse);
+                        });
+                        //redirect to view trip screen
+                       Actions.viewtrip(); 
                 }
                 else{
                     this.setState({isLoading:false});

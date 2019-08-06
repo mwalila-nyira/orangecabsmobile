@@ -8,10 +8,19 @@ import {
     KeyboardAvoidingView,
     FlatList,
     ActivityIndicator,
-    Alert
+    Alert,
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
-import {Container,Body,Footer, FooterTab,Content,Card, CardItem} from 'native-base';
+import {
+    Container,
+    Body,
+    Footer, 
+    FooterTab,
+    Content,
+    Card, 
+    CardItem,
+    Left, 
+    Right} from 'native-base';
 import { Actions } from 'react-native-router-flux';
 import styles from '../../styles';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -22,13 +31,15 @@ import { getUrl } from "../../config";
 import moment from 'moment';
 import PaymentModal from '../../Modal/component/paymentModal';
 
+const edittrip = require("../../../../assets/contacts/editproperty.png");
+const finderdriver = require("../../../../assets/contacts/userprofile.jpg");
+
 class ViewTrip extends React.Component {
     
     constructor(props){
         super(props);
         this.state = {
             data:[],
-            
             historydata:[],
             trippaid:[],
             paymenthistory:[],
@@ -40,6 +51,12 @@ class ViewTrip extends React.Component {
             amount:0,
             userId:null,
             tripId:null,
+            payment:null,
+            destination:'',
+            departure:'',
+            date:'',
+            nameofonerider:'',
+            numberofriders:'',
             cancelled:false,
             paymentStatus:false,
             isDeleted:false,
@@ -47,6 +64,17 @@ class ViewTrip extends React.Component {
             isLoadingTripPaid:false,
             isLoadingHistoryTrip:false,
             isLoadingHistoryPay:false, 
+            canGoBack:false,
+            isUpdatedTrip:false,
+            modalVisibleUpdate:false,
+            focusedLocation:{
+                latitude:0,
+                longitude:0,
+            },
+            
+            //update data tripId
+            updateDatas:{}
+            
         };
     }
 
@@ -61,7 +89,7 @@ class ViewTrip extends React.Component {
     showModal(){
         this.setState({modalVisible:true})
     }
-    
+
      //Payment modal
     _paynow(price,tripId,userId){
         this.setState({
@@ -98,6 +126,38 @@ class ViewTrip extends React.Component {
             this.setState({isDeleted:false});
             console.log(error);
         }
+    }
+    
+    updateData = async (trip_id, user_id,location,latitude,longitude,destination,amountofriders,nameofonerider,payment,date) => {
+        this.setState({isUpdatedTrip:true})
+          setTimeout(() => {
+            this.setState({
+                updateDatas:{
+                    tripId:trip_id,
+                    userId:user_id,
+                    destination:destination,
+                    departure:location,
+                    payment:payment,
+                    date:date,
+                    nameofonerider:nameofonerider,
+                    numberofrider:amountofriders.toString(),
+                    focusedLocation:{
+                        latitude:latitude,
+                        longitude:longitude,
+                    },
+                },
+                
+                isUpdatedTrip:false,
+                
+            }) 
+            // alert(this.state.updateDatas.numberofrider);
+            Actions.updateTrip({data:this.state.updateDatas})
+          }, 2000); 
+
+    }
+    
+    hideupdateModal = () => {
+        this.setState({modalVisibleUpdate:false})
     }
     
     _alltrips = async () => {
@@ -219,13 +279,21 @@ class ViewTrip extends React.Component {
        } 
     }
     
+    //request driver
+    requestDriver = async () =>{
+        alert('Sending request ......')
+    }
+    
     render(){ 
           
         return(
             
             <Container style={styles.containerModal}>
+                {/* Load trips */}
+                {this.state.isLoadingTrip == true ? <ActivityIndicator size="large" color="#F89D29" /> :
+                
                 <View>
-                <ScrollView>
+                    <ScrollView>
                     <KeyboardAvoidingView>
 
                    {this.state.data !== null ?
@@ -242,58 +310,93 @@ class ViewTrip extends React.Component {
                             <Text style={{fontWeight:'bold'}} >From: {item.departure}</Text>
                             <Text style={{fontWeight:'bold',marginTop:2,marginLeft:0}}>To: {item.destination}</Text>
                             <Text style={{fontWeight:'bold',marginTop:2,marginLeft:0}}>Distance: {item.distance} , {item.duration}</Text>
+                            <Text style={{fontWeight:'bold',marginTop:2,}}>Number of riders: {item.amountofriders}</Text>
                             <Text style={{fontWeight:'bold',marginTop:2,}}>Date: {moment(item.date).format('MMMM, Do YYYY HH:mm')}</Text>
                             <Text style={{fontWeight:'bold',marginTop:2,}}>Price: ZAR {item.price}</Text>
-                            
-                            <TouchableOpacity
-                            opacity="0.6"
-                            underlayColor="transparent"
-                            onPress={() => this._paynow(item.price,item.trip_id,item.user_id)}   
-                            style={{paddingTop:10,paddingBottom:20}}
-                            >
-                            <Image 
-                                source={{uri:"https://www.payfast.co.za/images/buttons/light-small-paynow.png"}}
-                                    style={{width:165,height:36}}
-                                />
-                                </TouchableOpacity>
-                            
-                                <TouchableOpacity
-                                    opacity="0.6"
-                                    onPress={() => { this.deleteData(item.trip_id)}}
-                                    style={{marginTop:-50,marginLeft:250}}
-                                >
-                                    <Text transparent value={item.trip_id}> 
-                                    <Icon name="trash" color="red" style={{fontSize:25}}/>  
-                                    </Text>
-                                </TouchableOpacity>
-                                {this.state.isDeleted == true &&    <ActivityIndicator size="large" color="#F89D29"/>}
-                                
-                            </Body>
-                            
+                            <Text style={{fontWeight:'bold',marginTop:2,}}>Trip status: {item.status_pay}</Text>
+                            <Text style={{fontWeight:'bold',marginTop:2,}}>Payment Method: {item.payment}</Text>
+                            </Body>  
                         </CardItem>
+                        <CardItem>
+                                <Left>
+                                    {item.payment !== 'cash' ?
+                                    <TouchableOpacity
+                                    opacity="0.6"
+                                    underlayColor="transparent"
+                                    onPress={() => this._paynow(item.price,item.trip_id,item.user_id)}   
+                                    >
+                                        <Image 
+                                            source={{uri:"https://www.payfast.co.za/images/buttons/light-small-paynow.png"}}
+                                                style={{width:165,height:36}}
+                                            />
+                                    </TouchableOpacity>
+                                    :
+                                    <TouchableOpacity
+                                        opacity="0.6"
+                                        underlayColor="transparent"
+                                        onPress={() => this.requestDriver(item.price,item.trip_id,item.user_id)}   
+                                        style={{flexDirection:"row",alignItems:"center"}}
+                                    >
+                                        <Image source={finderdriver} style={{width:30,height:30}}/>
+                                        <Text>Request Driver</Text>
+                                    </TouchableOpacity>
+                                    } 
+                                </Left>
+                                
+                                <Body>
+                                
+                                    {this.state.isUpdatedTrip == true ?    <ActivityIndicator 
+                                        size="large" 
+                                        color="#F89D29"
+                                        animating={this.state.isUpdatedTrip}
+                                    />:<TouchableOpacity
+                                        opacity="0.6"
+                                        onPress={() => { this.updateData(item.trip_id,item.user_id,item.departure,item.departureLatitude,item.departureLongitude,item.destination,item.amountofriders,item.nameofonerider,item.payment,item.date)}}
+                                        style={{marginLeft:100,marginTop:10}}
+                                    >
+                                    
+                                        <Image source={edittrip} />
+                                    </TouchableOpacity>}
+                                
+                                </Body>
+                                
+                                <Right>
+                                    <TouchableOpacity
+                                        opacity="0.6"
+                                        onPress={() => { this.deleteData(item.trip_id)}}
+                                    >
+                                        <Text transparent value={item.trip_id}> 
+                                        <Icon name="trash" color="red" style={{fontSize:25}}/>  
+                                        </Text>
+                                    </TouchableOpacity>
+                                    {this.state.isDeleted == true &&    <ActivityIndicator size="large" color="#F89D29"/>}
+                                </Right>
+                                
+                            </CardItem>
                         </Card>
                     </Content>                       
-                }
-                /> :<View style={{flex:1,justifyContent: 'center',alignContent:"center"}}>
-                    <Text>{this.state.message}</Text>
-                </View>}
-                {this.state.isLoadingTrip == true && <ActivityIndicator size="large" color="#F89D29" /> }
-                    </KeyboardAvoidingView>
-                </ScrollView>
-                <PaymentModal 
-                        showMyModal={this.state.modalVisible}
-                        amount={this.state.amount}
-                        tripId={this.state.tripId}
-                        userId={this.state.userId}
-                        hideModal={this._cancelledTransaction}         
-                    />
+                    }
+                    /> :<View style={{flex:1,justifyContent: 'center',alignContent:"center"}}>
+                        <Text>{this.state.message}</Text>
+                    </View>}
                     
-                
-            </View> 
-            <Footer style={{marginTop:'auto'}}>
-                    <FooterTab style={[styles.footerContainer]} >
-                        <TripPaid 
-                            trippaid = {this.state.trippaid}
+                    </KeyboardAvoidingView>
+
+                    </ScrollView>
+                        <PaymentModal 
+                            showMyModal={this.state.modalVisible}
+                            amount={this.state.amount}
+                            tripId={this.state.tripId}
+                            userId={this.state.userId}
+                            hideModal={this._cancelledTransaction}         
+                        />
+                 </View> 
+                 }
+                 
+                 <Footer style={{marginTop:'auto'}}>
+                        <FooterTab style={[styles.footerContainer]} >
+                            <TripPaid 
+                                trippaid = {this.state.trippaid}
                             isLoadingTripPaid={this.state.isLoadingTripPaid}
                         />
                         
@@ -308,7 +411,8 @@ class ViewTrip extends React.Component {
                         />
                             
                     </FooterTab>
-                </Footer> 
+                    </Footer>
+                
         </Container>
 
         );

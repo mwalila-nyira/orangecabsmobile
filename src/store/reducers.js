@@ -9,6 +9,7 @@ import {ForgotPassReducer as forgotpassword} from '../routes/Riders/ForgotPasswo
 import {ResetPasswordReducer as resetpass} from '../routes/Riders/ResetPassword/Reducer';
 import {ActivatePasswordReducer as activatepass} from '../routes/Riders/Activate/Reducer';
 import {ViewTripReducer as viewtrip} from '../routes/viewtrips/module/ViewTrip';
+import {UpdateTripReducer as updateTrip} from '../routes/viewtrips/module/updateTrip';
 import {HelpReducer as help} from '../routes/Help/Reducer';
 import {MessageReducer as message} from '../routes/Message/module/Message';
 import {ProfileReducer as profile} from '../routes/Profile/module/Profile';
@@ -20,6 +21,8 @@ import {RequestForRidesReducer as requestRide} from '../routes/Drivers/container
 import {MessageDriverReducer as messageDriver} from '../routes/Drivers/container/MessageReducer';
 
 import {ProfileDriverReducer as profileDriver } from "../routes/Drivers/container/ProfileReducer";
+
+
 
 export const MakeRootReducer = () => {
     return combineReducers({
@@ -40,7 +43,8 @@ export const MakeRootReducer = () => {
         drawer,
         requestRide,
         messageDriver,
-        profileDriver
+        profileDriver,
+        updateTrip,
 
     });
 }

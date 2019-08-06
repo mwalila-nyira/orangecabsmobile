@@ -23,14 +23,13 @@ var user = require("./routes/user");
 var deletetrip = require("./routes/deletetrip");
 var cancel_url = require("./routes/cancel_url");
 
-var app = express();
-
 var port = 3000;
 
-// var socket_io = require("socket.io");
+var app = express();
 
-// var io = socket_io();
+var socket_io = require("socket.io");
 
+var io = socket_io();
 
 //views
 
@@ -44,16 +43,6 @@ app.engine("html", require("ejs").renderFile);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:true}));
 
-// app.use((req, res, next)=>{
-// 	req.user_id = 1;
-// 	next();
-// })
-
-//Make our db accessible to our router
-// app.use(function(req,res,next){
-//     req.connDB = connDB,
-//     next()
-// });
 
 //Routes
 
@@ -80,11 +69,39 @@ app.use("/api",user);
 app.use("/api",deletetrip);
 app.use("/api",cancel_url);
 
-app.listen(app.listen(port, function(){
+
+//Sockect io
+//chat with socket io and user connected
+//socket io server connection
+io.on("connection", socket => {
+	console.log("a user connected :D");
+    //chat message 
+    // socket.on("chat message", msg => {  
+        
+    //     console.log(msg);    
+    //     io.emit("chat message", msg);  
+    //     }
+    // );
+    
+    //request a taxi rider side
+    socket.on("taxiRequest", dataResponse => {
+        console.log(dataResponse);
+        // console.log("someone wants a taxi and send the request for the ride!");
+        // if(taxiSocket !== null){
+        //     taxiSocket.emit("taxiRequest", routeResponse);
+        // }
+    });
+    
+    // //looking for passengers driver side
+    // socket.on("lookingForPassenger", () => {
+    //     console.log(" someone is looking for passenger ");
+    //     taxiSocket = socket;
+    // });
+});
+
+io.listen(app.listen(app.listen(port, function(){
 	console.log("Server running on port", port);
 	
-}));
+})));
 
-// app.io = io.on("connection", function(socket){
-// 	console.log("Socket connected: " + socket.id);
-// });
+

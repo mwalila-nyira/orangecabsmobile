@@ -10,6 +10,7 @@ import Driver from './Drivers/container/DriverContainer';
 import ResetPassword from './Riders/ResetPassword/container';
 import ActivatePassword from './Riders/Activate/container';
 import ViewTrip from './viewtrips/container/ViewTripContainer';
+import UpdateTrip from './viewtrips/container/updateTripContainer';
 import Help from './Help/container';
 import Message from './Message/container/MessageContainer';
 import Profile from './Profile/container/ProfileContainer';
@@ -58,6 +59,8 @@ const scenes = Actions.create(
         <Scene key="messageDriver" drawer={false} component={MessageDriver} title="Chat"  hideNavBar/>
         
         <Scene key="profileDriver" drawer={false} component={ProfileDriver} title="Account Setting" hideNavBar/>
+        
+        <Scene key="updateTrip" drawer={false} component={UpdateTrip} title="Update Trip" hideNavBar/>
 
         
         {/* <Scene key="Anasayfa" component={Anasayfa} title="Anasayfa" initial={false} renderLeftButton={null} /> */}

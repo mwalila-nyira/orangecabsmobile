@@ -14,7 +14,6 @@ import {
 } from 'react-native';
 
 import styles from '../../styles';
-import Loading from 'react-native-whc-loading';
 import { sha256 } from 'react-native-sha256';
 import { TextInput } from 'react-native-paper';
 import { Actions } from 'react-native-router-flux';
@@ -138,22 +137,6 @@ class LoginDriver extends React.Component {
                         <Text style={styles.buttonText}>Log In</Text>
                     </TouchableOpacity>
                     {this.state.isLoading == true && <ActivityIndicator size="large" color="#F89D29" />}
-    
-                    <TouchableOpacity style={styles.buttonSignup}
-                        underlayColor={'transparent'}
-                        onPress={() => Alert.alert('Info','Please! Contact the administrator for information!')}
-                        opacity="0.6"
-                    >
-                    <Text style={[styles.buttonTextSignup, {color: '#6D6E70'}]}>Forgot Password?</Text>
-                    </TouchableOpacity>
-    
-                    <TouchableOpacity style={styles.buttonSignup}
-                        underlayColor={'transparent'}
-                        onPress={() => Alert.alert('Info','Please! Contact the administrator for information!')}
-                        opacity="0.6"
-                    >
-                    <Text style={[styles.buttonTextSignup, {color: '#6D6E70'}]}>Don't have account? Click here</Text>
-                    </TouchableOpacity>
                     
                     <TouchableOpacity style={styles.buttonSignup}
                     underlayColor={'transparent'}

@@ -15,7 +15,7 @@ import { getUrl, getUrlExpressApi } from "../../config";
 import MapView,{PROVIDER_GOOGLE,Marker,Polyline} from 'react-native-maps';
 import apiKey from "../../google_api_key";
 import PolyLine from '@mapbox/polyline';
-import socketIo from 'socket.io-client';
+
 
 const {width,height} = Dimensions.get("window");
 
@@ -114,11 +114,6 @@ class Home extends React.Component {
     }
   }
   
-  //request driver indicator
-  // async requestDriverIndicator(){
-  //   this.setState({isRequestDriverIndicator:true});
-  // }
-  
   //Get google routes directions
   async getRouteDirections(destinationPlaceId,destinationName) {
     try {
@@ -205,14 +200,7 @@ class Home extends React.Component {
   
   //request driver
   async requestForRide(){
-
-    const socket = socketIo.connect(`${getUrlExpressApi}:3000`);
-    socket.on("connect", () => {
-      console.log("Client connected"); 
-      //request a taxi
-      socket.emit("taxiRequest",this.state.routeResponse);
-    });
-    
+    this.setState({isRequestRide:true})
     //pass data between 2 screen with react-native-router-flux
     //send data to the next page for completing ride
     // AsyncStorage.setItem('request_ride',this.state.directionsData);
@@ -253,16 +241,17 @@ class Home extends React.Component {
               onPress={() => this.requestForRide()}
              
             >
-              <View >
-                  <Text style={styles.findDriverRiderText}>Let's Go</Text>
-                  {/* {this.state.isRequestRide == true ?  
+              <View style={styles.findDriverRiderText}>
+                  
+                  {this.state.isRequestRide == true ?  
                   ( <ActivityIndicator 
                       animating={this.state.isRequestRide} 
                       size="small"
                       color="white"
                       />
-                  ): null
-                  } */}
+                  ): 
+                  <Text >Let's Go</Text>
+                  }
               </View>
             </TouchableOpacity>
       </View>);

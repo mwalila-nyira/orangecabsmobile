@@ -5,7 +5,8 @@ import {
   TouchableOpacity, 
   View, Alert,FlatList,ScrollView,
   KeyboardAvoidingView,
-  ActivityIndicator
+  ActivityIndicator,
+  Image
 } from 'react-native';
 import {Content, Card, CardItem,Left,Body,Button,Header} from 'native-base';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -13,6 +14,9 @@ import styles from '../../styles';
 import moment from 'moment';
 import { getUrl, } from "../../config";
 import { Actions } from 'react-native-router-flux';
+
+//icons 
+const paymenthist = require("../../../../assets/contacts/paymenthistoryfilled.png");
 
 class HistoryPaymentModal extends Component {
   state = {
@@ -33,7 +37,7 @@ class HistoryPaymentModal extends Component {
         .then((response) => response.json())
         .then((res) => {
 
-          this.setState({isLoadingDelete:false});
+          this.setState({isLoadingDelete:false,modalVisible: false});
           Actions.viewtrip();  
         })
         .catch(err=>{
@@ -68,7 +72,7 @@ class HistoryPaymentModal extends Component {
                          
                       </Body>
                   </Header>
-                  {this.props.isLoading == true ? <ActivityIndicator size="large" color="#F89D29" /> : 
+                  {this.props.isLoadingHistoryPaymentModal == true ? <ActivityIndicator size="large" color="#F89D29" /> : 
                   <View>
                   <ScrollView>
                     <KeyboardAvoidingView>
@@ -120,7 +124,8 @@ class HistoryPaymentModal extends Component {
 
         {/* <View> */}
           <Button vertical onPress={() => {this.setModalVisible(true);}}>
-            <Icon name="calendar" color="#F89D29" size={25} style={{paddingRight:15,paddingTop:10}} />
+            {/* <Icon name="calendar" color="#F89D29" size={25}  /> */}
+            <Image source={paymenthist} style={{marginRight:15}}/>
           </Button>
         {/* </View> */}
       </View>
