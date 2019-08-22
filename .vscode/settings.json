@@ -1,5 +1,5 @@
 {
     "workbench.colorCustomizations": {},
     "java.import.gradle.home": "/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home/bin/java",
-    "java.configuration.updateBuildConfiguration": "interactive"
+    "java.configuration.updateBuildConfiguration": "automatic"
 }
