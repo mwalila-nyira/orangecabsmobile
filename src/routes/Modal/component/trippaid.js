@@ -8,7 +8,8 @@ import {
   FlatList,
   ScrollView,
   KeyboardAvoidingView,
-  ActivityIndicator
+  ActivityIndicator,
+  StatusBar
 } from 'react-native';
 
 import {Content, Card, CardItem,Left,Body,Button,Header} from 'native-base';
@@ -17,6 +18,7 @@ import styles from '../../styles';
 import moment from 'moment';
 import { getUrl } from "../../config";
 import { Actions } from 'react-native-router-flux';
+
 
 class TripPaidModal extends Component {
   state = {
@@ -37,7 +39,7 @@ class TripPaidModal extends Component {
         .then((response) => response.json())
         .then((res) => {
 
-          this.setState({isLoadingDelete:false});
+          this.setState({isLoadingDelete:false,modalVisible: false});
           Actions.viewtrip();  
         })
         .catch(err=>{
@@ -55,12 +57,18 @@ class TripPaidModal extends Component {
   render() {
     return (
       <View style={{marginTop:0}}>
+        
         <Modal
           animationType="slide"
           transparent={false}
           visible={this.state.modalVisible}
           onRequestClose={() => this.setModalVisible(!this.state.modalVisible)}>
+            
             <View style={{marginTop: 0}}>
+            <StatusBar 
+          backgroundColor="#11A0DC"
+          barStyle="light-content"
+          />
               <Header style={{backgroundColor:"#11A0DC"}} iosBarStyle="light-content">
                       <Left>
                           <Button transparent onPress={()=>this.setModalVisible(!this.state.modalVisible)}>
@@ -72,7 +80,7 @@ class TripPaidModal extends Component {
                          
                       </Body>
                   </Header>
-                  {this.props.isLoading == true ? <ActivityIndicator size="large" color="#F89D29" /> : 
+                  {this.props.isLoadingTripPaid == true ? <ActivityIndicator size="large" color="#F89D29" /> : 
                   <View>
                   <ScrollView>
                     <KeyboardAvoidingView>
@@ -90,8 +98,19 @@ class TripPaidModal extends Component {
                                   <Text style={{fontWeight:'bold'}} >From: {item.departure}</Text>
                                   <Text style={{fontWeight:'bold',marginTop:2,marginLeft:0}}>To: {item.destination}</Text>
                                   <Text style={{fontWeight:'bold',marginTop:2,marginLeft:0}}>Distance: {item.distance} , {item.duration}</Text>
-                                  <Text style={{fontWeight:'bold',marginTop:2,}}>Date: {moment(item.date).format('MMMM, Do YYYY HH:mm')}</Text>
+                                  <Text style={{fontWeight:'bold',marginTop:2,}}>Date Pick up: {moment(item.date).format('MMMM, Do YYYY HH:mm')}</Text>
                                   <Text style={{fontWeight:'bold',marginTop:2,}}>Price: ZAR {item.price}</Text>
+                                  <Text style={{fontWeight:'bold',marginTop:2,}}>Driver: {item.username}</Text>
+                                  <Text style={{fontWeight:'bold',marginTop:2,}}>Model car:  {item.model_type}</Text>
+                                  <Text style={{fontWeight:'bold',marginTop:2,}}> Brand car: {item.brand_car}</Text>
+                                  <Text style={{fontWeight:'bold',marginTop:2,}}>Color car: {item.color}</Text>
+                                  <Text style={{fontWeight:'bold',marginTop:2,}}>Registration:  {item.vehicule_registration}</Text>
+                             
+                                 <Text style={{fontWeight:'bold',marginTop:2,}}>Date Trip: {moment(item.date).format('MMMM, Do YYYY HH:mm')}</Text>
+                                 <Text style={{fontWeight:'bold',marginTop:2,}}>Payment Method: {item.payment}</Text>
+                                 <Text style={{fontWeight:'bold',marginTop:2,}}>Status Pay Trip: {item.status_pay}</Text>
+                                 
+                                 <Text style={{fontWeight:'bold',marginTop:2,}}>Status Trip: {item.status_trip}</Text>
                                     
                                     <TouchableOpacity
                                       opacity="0.6"
@@ -120,12 +139,12 @@ class TripPaidModal extends Component {
                 
             </View>
         </Modal>
-
-        {/* <View> */}
           <Button vertical onPress={() => {this.setModalVisible(true);}}>
-          <Icon name="eye" color="#F89D29" size={25} style={{paddingLeft:15,paddingTop:10}} />
+            <Icon 
+              name="eye"
+              style={[styles.icon,{color: '#11A0DC',fontSize:25,paddingLeft:20}]}
+            />
           </Button>
-        {/* </View> */}
       </View>
     );
   }

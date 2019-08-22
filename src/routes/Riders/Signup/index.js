@@ -9,7 +9,8 @@ import {
     Image,
     KeyboardAvoidingView,
     Keyboard,
-    ActivityIndicator
+    ActivityIndicator,
+    StatusBar
 } from 'react-native';
 import { TextInput} from 'react-native-paper';
 import styles from '../../styles';
@@ -78,6 +79,10 @@ class Signup extends React.Component {
     render(){
         return(
             <View style={styles.container}>
+                <StatusBar 
+                backgroundColor="#11A0DC"
+                barStyle="light-content"
+                />
                 <ScrollView>
                 <KeyboardAvoidingView>
                     <View style={{height: deviceHeight, width: deviceWidth, alignItems: 'center', justifyContent: 'center'}}>

@@ -1,22 +1,30 @@
-import React from 'react';
-import {View, 
-    Text,
-    Alert, 
-    Dimensions, 
-    TouchableOpacity,
-    ActivityIndicator,
+import React, { Component } from 'react';
+import {
+    Alert,
     StyleSheet,
+    View,
+    StatusBar,
+    Dimensions,
+    TouchableOpacity,
+    Text,
+    ActivityIndicator,
+    Image,
+    Platform,
+    Linking
 } from 'react-native';
-import {Container,Button,Footer, FooterTab,} from 'native-base';
-import Icon from 'react-native-vector-icons/FontAwesome';
+
+import { Container } from 'native-base';
+import Icon from 'react-native-vector-icons/MaterialIcons'
 import { Actions } from 'react-native-router-flux';
-import AsyncStorage from '@react-native-community/async-storage';
-import { getUrl } from "../../config";
-import MapView,{PROVIDER_GOOGLE,Marker,Polyline} from 'react-native-maps';
+import { getUrl, serverExp } from "../../config";
+import MapView, { PROVIDER_GOOGLE, Marker, Polyline } from 'react-native-maps';
 import apiKey from "../../google_api_key";
 import PolyLine from '@mapbox/polyline';
+import socketIo from 'socket.io-client';
+import icons from '../../styles';
+import RideModal from '../../Modal/component/RideModal'
 
-const {width,height} = Dimensions.get("window");
+const { width, height } = Dimensions.get("window");
 
 const ASPECT_RATIO = width / height;
 
@@ -24,353 +32,381 @@ const LATITUDE_DELTA = 0.0922;
 
 const LONGITUDE_DELTA = ASPECT_RATIO * LATITUDE_DELTA;
 
-class Driver extends React.Component {
 
-  constructor(props){
-    super(props);
-    this.state = {
-      
-      error:"",
-      predictions:[],
-      pointCoords:[],
-      routeResponse:[],
-      indicator: false,
-      
-      focusedLocation:{
-        latitude:-33.9305686,
-        longitude:18.4731583,
-        latitudeDelta:LATITUDE_DELTA,
-        longitudeDelta:LONGITUDE_DELTA
-      },
-      locationChosen:false,
-      directionsData:{},
+export default class ProfileDriver extends Component {
 
-    }
-    //loadash with debounced  250,{ 'maxWait': 1000 }
-    // this.onChangeDestinationDebounced = _.debounce(this.onChangeDestination,1000);
-  }
-  
-  
-  // componentDidMount
-  componentDidMount(){
-   this.getCurrentLocationHandler(); 
-  }
-  
-  //pickup place manually
-  pickuplocationHandler = event =>{
-    const coords = event.nativeEvent.coordinate;
-    this.map.animateToRegion({
-      ...this.state.focusedLocation,
-      latitude:coords.latitude,
-      longitude:coords.longitude
-    });
-    this.setState(prevState => {
-      return {
-        focusedLocation:{
-          ...prevState.focusedLocation,
-          latitude:coords.latitude,
-          longitude:coords.longitude
-        },
-        locationChosen:true
-      }
-    })
-  }
-
-  //get current location for the user
-  getCurrentLocationHandler(){
-    navigator.geolocation.getCurrentPosition(
-      position => {
-        const coordsEvent = {
-          nativeEvent:{
-            coordinate:{
-              latitude:position.coords.latitude,
-               longitude:position.coords.longitude,
-            }
-          }
+    constructor(props) {
+        super(props);
+        this.state = {
+            error:"",
+            pointCoords:[],
+            routeResponse:[],
+            indicator: false,
+            
+            focusedLocation:{
+              latitude:-33.9305686,
+              longitude:18.4731583,
+              latitudeDelta:LATITUDE_DELTA,
+              longitudeDelta:LONGITUDE_DELTA
+            },
+            locationChosen:false,
+            
+            lookForPassengers: false,
+            datafindrider: [],
+            modalVisible: false,
+            isriderfound:false,
+            dataResponse:[]
         };
-        this.pickuplocationHandler(coordsEvent);
-        this.setState({error:null,});
-        },
-        error => this.setState({ error:error.message }),
-        {enableHighAccuracy:true, timeout:20000, maximumAge:2000}
-        );
-        // this.getRouteDirections();
-  }
-  
-  //request driver indicator
-  // async requestDriverIndicator(){
-  //   this.setState({isRequestDriverIndicator:true});
-  // }
-  
-  //Get google routes directions
-  async getRouteDirections(destinationPlaceId) {
-    try {
-      const response = await fetch(
-        `https://maps.googleapis.com/maps/api/directions/json?origin=${
-          this.state.focusedLocation.latitude
-        },${
-          this.state.focusedLocation.longitude
-        }&destination=place_id:${destinationPlaceId}&units=metric&key=${apiKey}`
-      );
-      
-      //store json data for directions
-      const json = await response.json(); 
-      console.log(json);
-       //using mapbox/PolyLine to decode the overview_polyline   
-      const points = PolyLine.decode(json.routes[0].overview_polyline.points);
-      
-      //pickup location 
-      const pickUpLocation = json.routes[0].legs[0].start_address ;
-      const pickUpLocationLat = json.routes[0].legs[0].start_location.lat;
-      const pickUpLocationLng = json.routes[0].legs[0].start_location.lng;
-      // console.log([pickUpLocation,pickUpLocationLat,pickUpLocationLng);
-      
-      //drop off location
-      const dropoffLocation = json.routes[0].legs[0].end_address;
-      const dropoffLocationLat = json.routes[0].legs[0].end_location.lat;
-      const dropoffLocationLng = json.routes[0].legs[0].end_location.lng;
-      //console.log([dropoffLocation,dropoffLocationLat,dropoffLocationLng]);
-      
-      //distance between two points
-      const distanceInMiles = json.routes[0].legs[0].distance.text;
-      const distanceMilesVirgules = distanceInMiles.replace(',','');
-      const distanceInKm = parseFloat(distanceMilesVirgules.replace(' km','')).toFixed(2);
-      // console.log(distanceInKm);
-      
-      //calculate price per Km 8.50/perKm
-      const priceBrute = 50 + (distanceInKm - 3) * 8.50;
-      const price = priceBrute.toFixed(2);
-      //console.log(price);
-      
-      const duration = json.routes[0].legs[0].duration.text;
-      //console.log(duration);
-      
-      //polyline mapbox coordinates store
-      const pointCoords = points.map(point => {
-        return { latitude: point[0], longitude: point[1] };
-      });
-      
-      const directionsData = {
-        pickUpLocation: pickUpLocation,
-        pickUpLocationLat:pickUpLocationLat,
-        pickUpLocationLng:pickUpLocationLng,
-        dropoffLocationLat:dropoffLocationLat,
-        dropoffLocation:dropoffLocation,
-        dropoffLocationLng:dropoffLocationLng,
-        distanceInKm:distanceInKm,
-        price:price,
-        duration:duration 
-      };
-      // console.log(directionsData);
-      //set data into differents variables for using later
-      this.setState({
-        pointCoords,
-        predictions: [],
-        directionsData,
-        //route response for requesting a book
-        routeResponse: json,
-        
-      });
-      
-      // AsyncStorage.setItem('request_ride',directionsData);
-      
-      Keyboard.dismiss();
-      
-      this.map.fitToCoordinates(pointCoords,
-        { edgePadding:{top:20,bottom:20,left:20,right:20}}
-      );
-      
-    } catch (error) {
-      console.error(error);
-    }
-  }
-  
-  //request driver
-  async requestDriver(){
-    const socket = socketIo.connect(`${host}:3000`);
-    
-    socket.on("connect", () => {
-      console.log("Client connected"); 
-      //request a taxi
-      socket.emit("taxiRequest",this.state.routeResponse);
-    });
-    
-  }
-    
-  //Logoutapp
-  logout = async () => {
+        //Automatically Refreshing Data 
+        this.intervalID;
 
-      let mobile = await AsyncStorage.getItem("mobile_driver");
-      let token = await AsyncStorage.getItem("token_driver");
-  
-      await fetch(`${getUrl}logoutapp.php`,{
-              method: "POST",
-              headers:{
-                  "Accept": "application/json",
-                  "Content-type": "application/json"
-              },
-              body:JSON.stringify({
-                  mobile:mobile,
-                  token:token
-              })
-          })
-          .then((response) => response.json())
-          .then((responseJson) => {
-              if(responseJson === "ok"){
-                  AsyncStorage.removeItem("mobile_driver");
-                  AsyncStorage.removeItem("token_driver");
-                  Actions.accueil();
-              }else{
+        this.socket;
+    }
+
+    componentDidMount() { 
+        //get data from requestRide
+        let that = this;
+        that.setState({
+            datafindrider: this.props.data
+        });
+
+        //disponibilize data object getting from Request for Rider Screen 
+        this.props.data;
+
+        // alert(JSON.stringify(this.props.data));
+
+        this.getCurrentLocationHandler(); 
+       
+        //make a socket io connect
+        this.socket = socketIo.connect(`${serverExp}`);
+        
+    }
+    
+      //pickup place manually
+    pickuplocationHandler = event =>{
+        const coords = event.nativeEvent.coordinate;
+        this.map.animateToRegion({
+        ...this.state.focusedLocation,
+        latitude:coords.latitude,
+        longitude:coords.longitude
+        });
+        this.setState(prevState => {
+        return {
+            focusedLocation:{
+            ...prevState.focusedLocation,
+            latitude:coords.latitude,
+            longitude:coords.longitude
+            },
+            locationChosen:true
+        }
+        })
+    }
+
+    //get current location for the user
+    getCurrentLocationHandler(){
+        navigator.geolocation.getCurrentPosition(
+        position => {
+            const coordsEvent = {
+            nativeEvent:{
+                coordinate:{
+                latitude:position.coords.latitude,
+                longitude:position.coords.longitude,
+                }
+            }
+            };
+            this.pickuplocationHandler(coordsEvent);
+            this.setState({error:null,});
+            },
+            error => this.setState({ error:error.message }),
+            {enableHighAccuracy:true, timeout:20000, maximumAge:2000}
+            );
+            // this.getRouteDirections();
+    }
+    
+    isFoundRider = async (tripId,userId,driverId) => {
+        //update status rider found to the server 
+        await fetch(`${getUrl}isFoundRider.php`,{
+            method: "POST",
+            headers:{
+                "Accept": "application/json",
+                "Content-type": "application/json"
+            },
+            body:JSON.stringify({
+                tripId:tripId,
+                userId:userId,
+                driverId:driverId
+            })
+        })
+        .then((response) => response.json())
+        .then((responseJson) => {
+            if(responseJson){
+                this.setState({
+                    lookForPassengers:false,isriderfound:true});
+                Alert.alert('Success',"Rider Found"),[{text: 'Okay'}];
+            
+            }else{
+                this.setState({lookForPassengers:false});
                 Alert.alert("Failed",JSON.stringify(responseJson)),[{text: "Okay"}];
-              }
-          }).catch((error) => {
+            }
+            
+        }).catch((error) => {
+            this.setState({lookForPassengers:false});
             alert("Try later or check your network!");
             console.error(error);
         });
-  }
-  
-    render(){
+    }
+
+    //Get google routes directions
+    getFindRider = async () => {
+        this.setState({lookForPassengers:true});
+        
+        const driverId = this.props.data.driverId;
+        const userId = this.props.data.userId;
+        const tripId = this.props.data.tripId;
+
+        const dataResponse = [
+            {
+                latitude:this.state.focusedLocation.latitude,
+                longitude: this.state.focusedLocation.longitude,
+            },
+            {
+                driverId:driverId,
+                userId:userId,
+                tripId:tripId
+            }];
+            
+        //emit driver data include his location
+        this.socket.emit('directionsDriver',dataResponse);
+        
+        // this.socket.on('')
+
+        //listenning for event on taxiRequest
+        this.socket.on('taxiRequest', routeResponse => {
+            // alert(JSON.stringify(routeResponse))
+            // console.log(routeResponse);
+            //compare data from routeResponse send by the server and dataResponse send the driver if is equal then trace a route between driver and rider
+            if(routeResponse[1].driverId == driverId && routeResponse[1].userId == userId && routeResponse[1].tripId == tripId){
+                
+                this.isFoundRider(tripId,userId,driverId);
+                
+                this.getDirectionApiRider(routeResponse[0].geocoded_waypoints[0].place_id);
+            }                    
+        });
+            
+    }
+    
+    //direction route between the driver and the rider
+    getDirectionApiRider = async (placeId) => {
+        try {
+            const response = await fetch(`https://maps.googleapis.com/maps/api/directions/json?origin=${this.state.focusedLocation.latitude},${this.state.focusedLocation.longitude}&destination=place_id:${placeId}&units=metric&key=${apiKey}`);
+        
+            //store json data for directions
+            const json = await response.json(); 
+            // console.log(json);
+            
+            // routeResponse = JSON.stringify(json);
+                //using mapbox/PolyLine to decode the overview_polyline   
+            const points = PolyLine.decode(json.routes[0].overview_polyline.points);
+            
+            //polyline mapbox coordinates store
+            const pointCoords = points.map(point => {
+                return { latitude: point[0], longitude: point[1] };
+            });
+        
+            // // console.log(directionsData);
+            // //set data into differents variables for using later
+            this.setState({pointCoords});
+            
+            this.map.fitToCoordinates(pointCoords,
+                { edgePadding:{top:20,bottom:20,left:20,right:20}}
+            );
+            
+        }catch (error) {
+        console.log(error)
+        } 
+    }
+    
+    acceptRiderRequest = async () =>{
+
+        const driverId = this.props.data.driverId;
+        const userId = this.props.data.userId;
+        const tripId = this.props.data.tripId;
+        const passengerLocationLatitude = this.props.data.departureLatitude;
+        const passengerLocationLongitude = this.props.data.departureLongitude;
+                
+        const dataResponse = [
+            {
+                latitude: this.state.focusedLocation.latitude,
+                longitude: this.state.focusedLocation.longitude,
+            },
+            {
+                driverId:driverId,
+                userId:userId,
+                tripId:tripId
+            }];
+            
+        //emit driver data include his location
+        this.socket.emit('driverLocation',dataResponse); 
+        
+         // navigate to the rider side by openning google maps
+        const passengerLocation = this.state.pointCoords[
+            this.state.pointCoords.length - 1];
+               
+        if (Platform.OS === "ios") {
+            Linking.canOpenURL(`http://maps.apple.com/?daddr=${passengerLocation.latitude},${passengerLocation.longitude}`)
+            .then((supported) => {
+                if (!supported) {
+                alert("Can't handle url: " + `http://maps.apple.com/?ll=${passengerLocation.latitude},${passengerLocation.longitude}`);
+                } else {
+                return Linking.openURL(`http://maps.apple.com/?ll=${passengerLocation.latitude},${passengerLocation.longitude}`);
+                }
+            })
+            .catch((err) => console.error('An error occurred', err));
+
+            }else {    
+                Linking.canOpenURL(`https://www.google.com/maps/dir/?api=1&origin=${this.state.focusedLocation.latitude},${this.state.focusedLocation.longitude}&destination=${passengerLocation.latitude},${passengerLocation.longitude}&travelmode=driving`)
+                .then((supported) => {
+                    if (!supported) {
+                        alert("Can't handle url: " + 
+                    `https://www.google.com/maps/dir/?api=1&origin=${this.state.focusedLocation.latitude},${this.state.focusedLocation.longitude}&destination=${passengerLocation.latitude},${passengerLocation.longitude}&travelmode=driving`);
+                        
+                    } else {
+                    return Linking.openURL(`https://www.google.com/maps/dir/?api=1&origin=${this.state.focusedLocation.latitude},${this.state.focusedLocation.longitude}&destination=${passengerLocation.latitude},${passengerLocation.longitude}&travelmode=driving`);
+                    }
+                })
+                .catch((err) => console.error('An error occurred', err));
+
+            }
+    }
+
+    render() {
+        let marker1 = null;
+      
+        if(this.state.focusedLocation){
+            marker1 = <MapView.Marker coordinate={this.state.focusedLocation} title="My location"/>
+        }
         
         let marker = null;
-        if(this.state.focusedLocation){
-          marker = <MapView.Marker coordinate={this.state.focusedLocation} />
+        //chech if the pointCoords is notr4 null > 1 display a marker polyline
+        if (this.state.pointCoords.length > 1) {
+            marker = < Marker coordinate = { this.state.pointCoords[this.state.pointCoords.length - 1] }
+            > 
+                <Image
+                style={{ width: 40, height: 40 }}
+                source={require("../../../../assets/contacts/person-marker.png")}
+                />
+            </ Marker>
         }
-        let driverButton = null;
-        //chech if the pointCoords is not null > 1 display a marker polyline
-        if(this.state.pointCoords.length > 1){
-        
-        // marker =( <Marker 
-        //             coordinate={this.state.pointCoords[this.state.pointCoords.length -1]}
-        //             /> );
-        
-        driverButton = 
-        ( <TouchableOpacity 
-                style={styles.findDriverRiderContainer}
-                onPress={() => this.requestDriver()}
-            >
-                <View >
-                    <Text style={styles.findDriverRiderText}>Find Driver</Text>
-                    {/* {this.state.isRequestDriverIndicator == true ?  
-                    ( <ActivityIndicator 
-                        animating={this.state.isRequestDriver} 
-                        size="small"
-                        color="white"
-                        />
-                    ): null
-                    } */}
-                </View>
-            </TouchableOpacity>);
 
-    }
-
-    return(
-        <Container>
-            <View style={styles.container}>
-                <MapView
-                    // ref={map => {this.map = map}}
-                    provider={PROVIDER_GOOGLE}
-                    style={styles.map}
-                    initialRegion={this.state.focusedLocation}
-                    onPress={this.pickuplocationHandler}
-                    region={this.state.focusedLocation}
-                    showsCompass={false} 
-                    showsUserLocation={true}
-                    ref={ref => this.map = ref}
-                >
-                
-                    <Polyline
-                        coordinates={this.state.pointCoords}
-                        strokeColor="red" // fallback for when 
-                        strokeWidth={4}
-                    />
-                    {marker}
+        return ( 
+            <Container>
+                <View style ={ styles.container}>
+                    <StatusBar backgroundColor = "#11A0DC"
+                    barStyle = "light-content" />
                     
-                </MapView>
-
-                {driverButton}        
-          
-            </View>
+                    <MapView
+                // ref={map => {this.map = map}}
+                provider={PROVIDER_GOOGLE}
+                style={styles.map}
+                initialRegion={this.state.focusedLocation}
+                onPress={this.pickuplocationHandler}
+                region={this.state.focusedLocation}
+                showsCompass={false} 
+                showsUserLocation={true}
+                ref={ref => this.map = ref}
+            >
             
-            <Footer style={{marginTop:'auto'}}>
-              <FooterTab style={[styles.footerContainer]} >
-                      
-                    <Button vertical active onPress={() => Actions.driver()}>
-                    <Icon name="home" size={20} color={"#F89D29"} />
-                    <Text style={{fontSize:12, color:"grey"}}>Home</Text>
-                    </Button>
+                <Polyline
+                    coordinates={this.state.pointCoords}
+                    strokeColor="red" // fallback for when 
+                    strokeWidth={4}
+                /> 
+                    {marker1} 
+                    { marker } 
+                    </MapView >
+                    
+                    <View 
+                        style={[styles.directionContainer, { flexDirection: "row", justifyContent: "space-around"}]}>
+                            
+                        <RideModal data = { this.props.data }/>
 
-                    <Button vertical  onPress={() => Actions.requestRide()}>
-                    <Icon name="eye" size={20} color={"#F89D29"} />
-                    <Text style={{fontSize:12, color:"grey"}}>Requests</Text>
-                    </Button>
+                            {this.state.isriderfound == true ?
+                            <TouchableOpacity opacity = "0.6"
+                            onPress = {() => this.acceptRiderRequest()}
+                            style = {{ padding: 7, backgroundColor: "#F89D29", color: "#FFFFFF", flexDirection: "row" }} >   
+                            <Icon name = "place"
+                            style = {[icons.icon, { color: '#FFFFFF' }]}/> 
+                                <Text style = {{ color: "#fff", fontSize: 15 }}>Confirm Ride </Text>
+                                
+                            </TouchableOpacity>
+                            :
+                            <TouchableOpacity opacity = "0.6"
+                            onPress = {() => this.getFindRider()}
+                            style = {{ padding: 7, backgroundColor: "#F89D29", color: "#FFFFFF", flexDirection: "row" }} >
+                                
+                            <Icon name = "place"
+                            style = {[icons.icon, { color: '#FFFFFF' }]}/> 
+                            
+                            {this.state.lookForPassengers == true ?
+                                <ActivityIndicator size = "small"
+                                color = "#FFFFFF" / > :
+                                <Text style = {{ color: "#fff", fontSize: 15 }} > 
+                                Find Rider </Text>
+                            }
 
-                    <Button vertical  onPress={() => Actions.profileDriver()}>
-                        <Icon name="user" size={20} color={"#F89D29"} />
-                        <Text style={{fontSize:12, color:"grey"}}>Profile</Text>
-                    </Button>
-                    <Button vertical  onPress={() => Actions.messageDriver()}>
-                        <Icon active name="envelope-o" size={20} color={"#F89D29"} />
-                        <Text style={{fontSize:12, color:"grey"}}>Message</Text>
-                    </Button>
-                    <Button vertical  onPress={() => this.logout()}>
-                        <Icon name="power-off" size={20} color={"#F89D29"} />
-                        <Text style={{fontSize:12, color:"grey"}}>Logout</Text>
-                    </Button>
+                            </TouchableOpacity>
+                            }
 
-                    </FooterTab>
-                </Footer>  
-     
-        </Container>
-        
-    );
+                            <TouchableOpacity 
+                                onPress = {() => Actions.requestRide()}
+                                style = {{ padding: 7, backgroundColor: "#FFFFFF", color: "#11A0DC", flexDirection: "row", borderWidth: 0.5, borderColor: "#11A0DC" }
+                                }>
+                                <Icon name = "dashboard"
+                                style = {[styles.icon, { color: '#FFFFFF' }]}/> 
+                                <Text style = {{color: "#11A0DC", fontSize: 15, }} > 
+                                Requests </Text> 
+                            </TouchableOpacity>
+                        
+                    </View>
+                    
+                </View>
+
+            </Container>
+
+        );
     }
-
 }
 
-export default Driver;
-
 const styles = StyleSheet.create({
-  container: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  map: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  destinationInput: {
-    height:50,
-    borderWidth:0.5,
-    marginTop:50,
-    marginLeft:5,
-    marginRight:5,
-    padding:15,
-    backgroundColor:'#fff',
-    opacity:0.9,
-        borderRadius:7
-  },
-  suggestions: {
-    backgroundColor:'white',
-    fontSize:18,
-    borderWidth:0.5,
-    padding:5,
-    marginLeft:5,
-    marginRight:5
-  },
-  findDriverRiderContainer: {
-    backgroundColor:'#11A0DC',
-    marginTop: 'auto',
-    padding:15,
-    margin:20,
-    alignSelf:'center',
-    paddingLeft:30,
-    paddingRight:30
-  },
-  findDriverRiderText: {
-    fontSize:20,
-    color:'#fff',
-  },
-  footerContainer:{
-    backgroundColor:"#fff",
-    // marginTop:'auto'
-  },
+
+    container: {
+        ...StyleSheet.absoluteFillObject,
+    },
+    map: {
+        ...StyleSheet.absoluteFillObject,
+    },
+    findDriverRiderContainer: {
+        backgroundColor: '#11A0DC',
+        // marginTop: 'auto',
+        padding: 10,
+        // margin:20,
+        alignSelf: 'center',
+        marginLeft: 170
+            // paddingLeft:30,
+            // paddingRight:30
+    },
+    directionContainer: {
+        backgroundColor: '#fff',
+        marginTop: 'auto',
+        padding: 15,
+        // marginTop:Platform.OS === "android" ? 330 : 400,
+        // alignSelf:'center',
+        paddingLeft: 30,
+        paddingRight: 30
+    },
+    findDriverRiderText: {
+        fontSize: 20,
+        color: '#fff',
+    }
 
 });

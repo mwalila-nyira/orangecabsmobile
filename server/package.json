@@ -18,6 +18,7 @@
     "mysql": "github:mysqljs/mysql",
     "nodemailer": "^6.3.0",
     "nodemon": "^1.18.9",
+    "socket.io": "^2.2.0",
     "validator": "^10.10.0"
   }
 }

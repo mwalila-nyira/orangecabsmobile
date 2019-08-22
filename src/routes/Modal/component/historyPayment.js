@@ -5,7 +5,8 @@ import {
   TouchableOpacity, 
   View, Alert,FlatList,ScrollView,
   KeyboardAvoidingView,
-  ActivityIndicator
+  ActivityIndicator,
+  StatusBar
 } from 'react-native';
 import {Content, Card, CardItem,Left,Body,Button,Header} from 'native-base';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -13,6 +14,7 @@ import styles from '../../styles';
 import moment from 'moment';
 import { getUrl, } from "../../config";
 import { Actions } from 'react-native-router-flux';
+
 
 class HistoryPaymentModal extends Component {
   state = {
@@ -33,7 +35,7 @@ class HistoryPaymentModal extends Component {
         .then((response) => response.json())
         .then((res) => {
 
-          this.setState({isLoadingDelete:false});
+          this.setState({isLoadingDelete:false,modalVisible: false});
           Actions.viewtrip();  
         })
         .catch(err=>{
@@ -51,12 +53,17 @@ class HistoryPaymentModal extends Component {
   render() {
     return (
       <View style={{marginTop:0}}>
+        
         <Modal
           animationType="slide"
           transparent={false}
           visible={this.state.modalVisible}
           onRequestClose={() => this.setModalVisible(!this.state.modalVisible)}>
             <View style={{marginTop: 0}}>
+            <StatusBar 
+          backgroundColor="#11A0DC"
+          barStyle="light-content"
+          />
               <Header style={{backgroundColor:"#11A0DC"}} iosBarStyle="light-content">
                       <Left>
                           <Button transparent onPress={()=>this.setModalVisible(!this.state.modalVisible)}>
@@ -68,7 +75,7 @@ class HistoryPaymentModal extends Component {
                          
                       </Body>
                   </Header>
-                  {this.props.isLoading == true ? <ActivityIndicator size="large" color="#F89D29" /> : 
+                  {this.props.isLoadingHistoryPaymentModal == true ? <ActivityIndicator size="large" color="#F89D29" /> : 
                   <View>
                   <ScrollView>
                     <KeyboardAvoidingView>
@@ -120,7 +127,8 @@ class HistoryPaymentModal extends Component {
 
         {/* <View> */}
           <Button vertical onPress={() => {this.setModalVisible(true);}}>
-            <Icon name="calendar" color="#F89D29" size={25} style={{paddingRight:15,paddingTop:10}} />
+            {/* <Icon name="calendar" color="#F89D29" size={25}  /> */}
+            <Icon name="money" style={[styles.icon,{color: '#11A0DC',fontSize:25,paddingRight:20}]}/>
           </Button>
         {/* </View> */}
       </View>

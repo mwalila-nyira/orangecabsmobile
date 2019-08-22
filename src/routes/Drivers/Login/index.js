@@ -10,11 +10,11 @@ import {
     Image,
     KeyboardAvoidingView,
     Keyboard,
-    ActivityIndicator
+    ActivityIndicator,
+    StatusBar
 } from 'react-native';
 
 import styles from '../../styles';
-import Loading from 'react-native-whc-loading';
 import { sha256 } from 'react-native-sha256';
 import { TextInput } from 'react-native-paper';
 import { Actions } from 'react-native-router-flux';
@@ -82,6 +82,10 @@ class LoginDriver extends React.Component {
     render(){
         return(
             <View style={styles.container}>
+                <StatusBar 
+                    backgroundColor="#11A0DC"
+                    barStyle="light-content"
+                    />
             <ScrollView>
                 <KeyboardAvoidingView>
                 <View style={{height: deviceHeight, width: deviceWidth, alignItems: 'center', justifyContent: 'center'}}>
@@ -138,22 +142,6 @@ class LoginDriver extends React.Component {
                         <Text style={styles.buttonText}>Log In</Text>
                     </TouchableOpacity>
                     {this.state.isLoading == true && <ActivityIndicator size="large" color="#F89D29" />}
-    
-                    <TouchableOpacity style={styles.buttonSignup}
-                        underlayColor={'transparent'}
-                        onPress={() => Alert.alert('Info','Please! Contact the administrator for information!')}
-                        opacity="0.6"
-                    >
-                    <Text style={[styles.buttonTextSignup, {color: '#6D6E70'}]}>Forgot Password?</Text>
-                    </TouchableOpacity>
-    
-                    <TouchableOpacity style={styles.buttonSignup}
-                        underlayColor={'transparent'}
-                        onPress={() => Alert.alert('Info','Please! Contact the administrator for information!')}
-                        opacity="0.6"
-                    >
-                    <Text style={[styles.buttonTextSignup, {color: '#6D6E70'}]}>Don't have account? Click here</Text>
-                    </TouchableOpacity>
                     
                     <TouchableOpacity style={styles.buttonSignup}
                     underlayColor={'transparent'}
@@ -226,7 +214,7 @@ class LoginDriver extends React.Component {
                         this.setState({isLoading:false});
                         AsyncStorage.setItem('mobile_driver',userMobile);
                         AsyncStorage.setItem('token_driver',token);
-                        Actions.driver();
+                        Actions.requestRide();
                     }, 2000);
 
                 }else{

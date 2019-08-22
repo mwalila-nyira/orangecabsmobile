@@ -10,12 +10,17 @@ import Driver from './Drivers/container/DriverContainer';
 import ResetPassword from './Riders/ResetPassword/container';
 import ActivatePassword from './Riders/Activate/container';
 import ViewTrip from './viewtrips/container/ViewTripContainer';
+import UpdateTrip from './viewtrips/container/updateTripContainer';
+import ProfileDriverClientSide from './viewtrips/container/profilDriverContainer';
 import Help from './Help/container';
 import Message from './Message/container/MessageContainer';
 import Profile from './Profile/container/ProfileContainer';
 import Modal from './Modal/container/ModalContainer';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import RequestForRide from "./Drivers/container/RequestForRidesContainer";
+import StopActivity from "./Drivers/container/StopActivityContainer";
+import TripComplete from "./Drivers/container/TripCompleteContainer";
+import NavigationDriverMap from "./viewtrips/container/NavigationDriverMapContainer"
 //drawer
 import Sidebar from './sidebar/container';
 import MessageDriver from './Drivers/container/MessageContainer';
@@ -30,7 +35,7 @@ const TabIcon = ({focused, iconName}) => {
 
 const MenuIcon = () => {
     return (
-        <Icon name='menu' size={35} color="#F89D29" style={{marginTop:0}}/>
+        <Icon name='menu' size={35} color="#11A0DC" style={{marginTop:0}}/>
     )
 }
 const scenes = Actions.create(
@@ -49,7 +54,7 @@ const scenes = Actions.create(
         <Scene key="activatepass" component={ActivatePassword} title="Activate Password" drawer={false} initial={false} hideNavBar/>
         <Scene key="viewtrip" component={ViewTrip} title="Manage Trips"/>
         <Scene key="help" component={Help} title="How to use Orange Cabs"/>
-        <Scene key="message" component={Message} title="chat / Leave a Message"/>
+        <Scene key="message" component={Message} drawer={false} title="chat"hideNavBar/>
         <Scene key="profile" component={Profile} title="Profile Settings"/>
         <Scene key="modal" component={Modal} title="Complete Bookings Request Step 2/3"/>
         
@@ -57,7 +62,17 @@ const scenes = Actions.create(
         
         <Scene key="messageDriver" drawer={false} component={MessageDriver} title="Chat"  hideNavBar/>
         
+        <Scene key="stopActivity" drawer={false} component={StopActivity} title="Trip in progress"  hideNavBar/>
+        
+        <Scene key="tripComplete" drawer={false} component={TripComplete} title="Trip Complete"  hideNavBar/>
+        
         <Scene key="profileDriver" drawer={false} component={ProfileDriver} title="Account Setting" hideNavBar/>
+        
+        <Scene key="updateTrip" drawer={false} component={UpdateTrip} title="Update Trip" hideNavBar/>
+        
+        <Scene key="profileDriverRider" drawer={false} component={ProfileDriverClientSide} title="Profile Driver Rider side" hideNavBar/>
+        
+        <Scene key="navigationDriverMap" drawer={false} component={NavigationDriverMap} title="NavigationDriverMap" hideNavBar/>
 
         
         {/* <Scene key="Anasayfa" component={Anasayfa} title="Anasayfa" initial={false} renderLeftButton={null} /> */}

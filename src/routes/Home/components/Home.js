@@ -8,6 +8,7 @@ import {View,
     StyleSheet,
     TextInput,
     Keyboard,
+    StatusBar
 } from 'react-native';
 import {Container,} from 'native-base';
 import { Actions } from 'react-native-router-flux';
@@ -15,7 +16,7 @@ import { getUrl, getUrlExpressApi } from "../../config";
 import MapView,{PROVIDER_GOOGLE,Marker,Polyline} from 'react-native-maps';
 import apiKey from "../../google_api_key";
 import PolyLine from '@mapbox/polyline';
-import socketIo from 'socket.io-client';
+
 
 const {width,height} = Dimensions.get("window");
 
@@ -114,11 +115,6 @@ class Home extends React.Component {
     }
   }
   
-  //request driver indicator
-  // async requestDriverIndicator(){
-  //   this.setState({isRequestDriverIndicator:true});
-  // }
-  
   //Get google routes directions
   async getRouteDirections(destinationPlaceId,destinationName) {
     try {
@@ -140,6 +136,7 @@ class Home extends React.Component {
       const pickUpLocation = json.routes[0].legs[0].start_address ;
       const pickUpLocationLat = json.routes[0].legs[0].start_location.lat;
       const pickUpLocationLng = json.routes[0].legs[0].start_location.lng;
+      const pickupPlaceId = json.geocoded_waypoints[0].place_id;
       // console.log([pickUpLocation,pickUpLocationLat,pickUpLocationLng);
       
       //drop off location
@@ -171,12 +168,14 @@ class Home extends React.Component {
         pickUpLocation: pickUpLocation,
         pickUpLocationLat:pickUpLocationLat,
         pickUpLocationLng:pickUpLocationLng,
+        pickupPlaceId:pickupPlaceId,
         dropoffLocationLat:dropoffLocationLat,
         dropoffLocation:dropoffLocation,
         dropoffLocationLng:dropoffLocationLng,
         distanceInKm:distanceInKm,
         price:price,
-        duration:duration 
+        duration:duration,
+        destinationPlaceId:destinationPlaceId, 
       };
       // console.log(directionsData);
       //set data into differents variables for using later
@@ -185,6 +184,7 @@ class Home extends React.Component {
         predictions: [],
         directionsData,
         destination: destinationName,
+        destinationPlaceId:destinationPlaceId,
         //route response for requesting a book
         routeResponse: json,
         
@@ -205,31 +205,22 @@ class Home extends React.Component {
   
   //request driver
   async requestForRide(){
-
-    const socket = socketIo.connect(`${getUrlExpressApi}:3000`);
-    socket.on("connect", () => {
-      console.log("Client connected"); 
-      //request a taxi
-      socket.emit("taxiRequest",this.state.routeResponse);
-    });
-    
+    this.setState({isRequestRide:true})
     //pass data between 2 screen with react-native-router-flux
     //send data to the next page for completing ride
     // AsyncStorage.setItem('request_ride',this.state.directionsData);
     Actions.modal({requestRide:this.state.directionsData});
-    
-    
   }
     
   render(){
       
-      let marker = null;
+      // let marker2 = null;
       
-      if(this.state.focusedLocation){
-        marker = <MapView.Marker coordinate={this.state.focusedLocation} title="My location"/>
-      }
+      // if(this.state.focusedLocation){
+      //   marker2 = <MapView.Marker coordinate={this.state.focusedLocation} title="My location"/>
+      // }
 
-      let marker2 = null;
+      let marker = null;
       let detailsDirections = null;
       //chech if the pointCoords is not null > 1 display a marker polyline
       if(this.state.pointCoords.length > 1){
@@ -253,16 +244,17 @@ class Home extends React.Component {
               onPress={() => this.requestForRide()}
              
             >
-              <View >
-                  <Text style={styles.findDriverRiderText}>Let's Go</Text>
-                  {/* {this.state.isRequestRide == true ?  
+              <View style={styles.findDriverRiderText}>
+                  
+                  {this.state.isRequestRide == true ?  
                   ( <ActivityIndicator 
                       animating={this.state.isRequestRide} 
                       size="small"
                       color="white"
                       />
-                  ): null
-                  } */}
+                  ): 
+                  <Text >Let's Go</Text>
+                  }
               </View>
             </TouchableOpacity>
       </View>);
@@ -292,6 +284,11 @@ class Home extends React.Component {
     return(
         <Container>
             <View style={styles.container}>
+            <StatusBar 
+                backgroundColor="#11A0DC"
+                // iosBarStyle="light-content"
+                barStyle="light-content"
+              />
                 <MapView
                     // ref={map => {this.map = map}}
                     provider={PROVIDER_GOOGLE}
@@ -309,8 +306,8 @@ class Home extends React.Component {
                         strokeColor="red"
                         strokeWidth={4}
                     />
-                    {marker}
-                    {marker2}                  
+                    {/* {marker2} */}
+                    {marker}                  
                 </MapView>
         
                 <View style={{marginTop: 50}}>

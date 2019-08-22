@@ -1,9 +1,24 @@
 // import {createStackNavigator, createAppContainer} from 'react-navigation';
 import React from 'react';
 import Root from './src/main';
-import { View, StyleSheet,StatusBar } from 'react-native';
+import { View, StyleSheet,StatusBar ,Platform} from 'react-native';
 import SplashScreen from 'react-native-splash-screen';
 
+// if (Platform.OS === 'android') {
+//   if (typeof Symbol === 'undefined') {
+//     if (Array.prototype['@@iterator'] === undefined) {
+//       Array.prototype['@@iterator'] = function() {
+//         let i = 0;
+//         return {
+//           next: () => ({
+//             done: i >= this.length,
+//             value: this[i++],
+//           }),
+//         };
+//       };
+//     }
+//   }
+// }
 export default class App extends React.Component{
   
   componentDidMount(){

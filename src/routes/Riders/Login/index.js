@@ -10,7 +10,8 @@ import {
     KeyboardAvoidingView,
     TouchableOpacity,
     Keyboard,
-    ActivityIndicator
+    ActivityIndicator,
+    StatusBar
 } from 'react-native';
 import styles from '../../styles';
 import { sha256 } from 'react-native-sha256';
@@ -89,6 +90,10 @@ class LoginRider extends React.Component {
     render(){
         return(
             <View style={[styles.container,{margin:"auto"}]}>
+                <StatusBar 
+                    backgroundColor="#11A0DC"
+                    barStyle="light-content"
+                    />
             <ScrollView>
                 <KeyboardAvoidingView>
                 <View 

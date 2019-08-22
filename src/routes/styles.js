@@ -98,7 +98,8 @@ export default {
   },
   icon: {
     color:"#000",
-    fontSize:20
+    fontSize:20,
+    paddingRight:10
   },
   headerText:{
       color:"#fff",
@@ -128,5 +129,63 @@ export default {
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
+  btn:{
+    flexDirection:'row',
+    alignItems: 'center'
+  },
+  suggestions: {
+    backgroundColor:'white',
+    fontSize:18,
+    borderWidth:0.5,
+    padding:5,
+    marginLeft:0,
+    marginRight:0
+  },
+  formContainerUpdate: {
+    marginTop: 30,
+    paddingHorizontal: 10,
+  },
+  directionContainer: {
+    backgroundColor:'#fff',
+    marginTop: 'auto',
+    padding:15,
+    // marginTop:Platform.OS === "android" ? 330 : 400,
+    // alignSelf:'center',
+    paddingLeft:30,
+    paddingRight:30
+  },
+  findDriverRiderText: {
+    fontSize:20,
+    color:'#fff',
+  },
+  findDriverRiderContainer: {
+    backgroundColor:'#11A0DC',
+    marginTop: 10,
+    padding:10,
+    color: '#FFFFFF',
+    // margin:20,
+    alignSelf:'center',
+    marginLeft:170
+    // paddingLeft:30,
+    // paddingRight:30
+  },
 
+  //chat message style
+  ContainerMessage:{
+    // ...absoluteFillObject,
+    flex: 1,
+    backgroundColor:"#FFFFFF"
+    
+  },
+  messageInput:{
+    height:40,
+    borderWidth:0.5,
+    marginLeft:5,
+    marginRight:5,
+    // padding:15,
+    backgroundColor:'#fff',
+    opacity:0.9,
+    borderRadius:7,
+    width:300
+  }
 };

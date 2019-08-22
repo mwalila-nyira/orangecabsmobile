@@ -3,6 +3,7 @@ import {
     TouchableOpacity, 
     ActivityIndicator,
     Image,
+    StatusBar
 } from 'react-native';
 import { 
     Container, 
@@ -16,8 +17,9 @@ import {
     Right,
     Thumbnail 
 } from 'native-base';
+import Icon from "react-native-vector-icons/MaterialIcons";
+import styles from "../../styles";
 const avatars = require("../../../../assets/contacts/userprofile.jpg")
-const editicon = require("../../../../assets/contacts/iconpencil.png");
 import AsyncStorage from '@react-native-community/async-storage';
 import { getUrl} from "../../config";
 
@@ -73,6 +75,10 @@ export default class ProfileApp extends Component {
     render() {
         return (
         <Container>
+            <StatusBar 
+                backgroundColor="#11A0DC"
+                barStyle="light-content"
+                />
             <Content>
                 {this.state.fetching == true ? 
                     <ActivityIndicator size="large" color="#F89D29"/> : <Card>
@@ -83,7 +89,7 @@ export default class ProfileApp extends Component {
                     <CardItem>
                         <Thumbnail square source={avatars} />
                         <TouchableOpacity>
-                            <Image source={editicon} />
+                            <Icon name="edit" style={[styles.icon,{color: '#28b485',fontSize:25}]} />
                         </TouchableOpacity>
                     </CardItem>
                     
@@ -94,7 +100,7 @@ export default class ProfileApp extends Component {
                         </Body>
                         <Right>
                             <TouchableOpacity>
-                                <Image source={editicon} />
+                                <Icon name="edit" style={[styles.icon,{color: '#28b485',fontSize:25}]} />
                             </TouchableOpacity>
                         </Right>
                     </CardItem>
@@ -106,7 +112,7 @@ export default class ProfileApp extends Component {
                         </Body>
                         <Right>
                             <TouchableOpacity>
-                                <Image source={editicon} />
+                                <Icon name="edit" style={[styles.icon,{color: '#28b485',fontSize:25}]} />
                             </TouchableOpacity>
                         </Right>
                     </CardItem>
@@ -118,7 +124,7 @@ export default class ProfileApp extends Component {
                         </Body>
                         <Right>
                             <TouchableOpacity opacity="0.6">
-                                <Image source={editicon} />
+                                <Icon name="edit" style={[styles.icon,{color: '#28b485',fontSize:25}]} />
                             </TouchableOpacity>
                         </Right>
                     </CardItem>

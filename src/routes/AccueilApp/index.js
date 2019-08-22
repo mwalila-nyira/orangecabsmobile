@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { View, Image} from "react-native";
+import { View, Image,StatusBar} from "react-native";
 import AsyncStorage from '@react-native-community/async-storage';
 import { Container, Button, H3, Text } from "native-base";
 import { Actions } from "react-native-router-flux";
@@ -26,14 +26,17 @@ loadInitialState = async () => {
         
     }
     if(driver !== null && mobile_driver !== null){
-      Actions.driver();
+      Actions.requestRide();
     }
 
 }
 render(){
   return(
     <Container>
-      
+      <StatusBar 
+          backgroundColor="#11A0DC"
+          barStyle="light-content"
+          />
       <View style={styles.logoContainer}>
         <Image source={launchscreenLogo} style={styles.logo}/>
       </View>

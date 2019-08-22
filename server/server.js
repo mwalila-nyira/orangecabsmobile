@@ -23,14 +23,13 @@ var user = require("./routes/user");
 var deletetrip = require("./routes/deletetrip");
 var cancel_url = require("./routes/cancel_url");
 
-var app = express();
-
 var port = 3000;
 
-// var socket_io = require("socket.io");
+var app = express();
 
-// var io = socket_io();
+var socket_io = require("socket.io");
 
+var io = socket_io();
 
 //views
 
@@ -44,16 +43,6 @@ app.engine("html", require("ejs").renderFile);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:true}));
 
-// app.use((req, res, next)=>{
-// 	req.user_id = 1;
-// 	next();
-// })
-
-//Make our db accessible to our router
-// app.use(function(req,res,next){
-//     req.connDB = connDB,
-//     next()
-// });
 
 //Routes
 
@@ -80,11 +69,68 @@ app.use("/api",user);
 app.use("/api",deletetrip);
 app.use("/api",cancel_url);
 
-app.listen(app.listen(port, function(){
+//
+let taxiSocket = null;
+let riderSocket = null;
+//send by id
+// let socket.broadcast.to(clientid).emit('antwort', "message x y z");
+//Sockect io
+//chat with socket io and user connected
+//socket io server connection
+io.on("connection", socket => {
+	console.log("a user connected :" +socket.id);
+    //chat message 
+    // socket.on("chat message",msg=>{
+    //     console.log(msg)
+        
+    //     io.sockets.emit("chat message",msg)
+    // })
+    
+    //request a taxi rider side
+    socket.on("taxiRequest", routeResponse => {
+        // console.log(routeResponse);
+        // riderSocket = socket;
+        // console.log("Someone wants a taxi!");
+        io.sockets.emit("taxiRequest", routeResponse)
+        // if(taxiSocket != null){
+        //     taxiSocket.emit("taxiRequest", routeResponse);
+        // }
+        
+    });
+    
+    //looking for passengers driver side
+    socket.on("driverLocation", dataResponse => {
+        console.log(" Data send by Driver for his location"+dataResponse);
+        // emit driver location
+        io.sockets.emit('driverLocation',dataResponse);
+        
+    });
+    
+    //Direction driver
+    // socket.on("directionsDriver",data => {
+    //     console.log("Driver send his coordinate"+data)
+    //     // emit driver location
+    // //    if (riderSocket !== null) {
+    //       riderSocket.emit('directionsDriver',data); 
+    // //    }
+        
+    // })
+    
+    
+    // socket.on("lookingForPassenger",()=> {
+    //     console.log("Driver looking for rider")
+    //     taxiSocket = socket
+        
+        
+    // })
+    // socket.on("disconnect",() => {
+    //     delete 
+    // })
+});
+
+io.listen(app.listen(app.listen(port, function(){
 	console.log("Server running on port", port);
 	
-}));
+})));
 
-// app.io = io.on("connection", function(socket){
-// 	console.log("Socket connected: " + socket.id);
-// });
+

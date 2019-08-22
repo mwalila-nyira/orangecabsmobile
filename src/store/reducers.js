@@ -9,6 +9,8 @@ import {ForgotPassReducer as forgotpassword} from '../routes/Riders/ForgotPasswo
 import {ResetPasswordReducer as resetpass} from '../routes/Riders/ResetPassword/Reducer';
 import {ActivatePasswordReducer as activatepass} from '../routes/Riders/Activate/Reducer';
 import {ViewTripReducer as viewtrip} from '../routes/viewtrips/module/ViewTrip';
+import {UpdateTripReducer as updateTrip} from '../routes/viewtrips/module/updateTrip';
+import {ProfileDriverRiderReducer as profileDriverRider} from '../routes/viewtrips/module/profileDriver.js';
 import {HelpReducer as help} from '../routes/Help/Reducer';
 import {MessageReducer as message} from '../routes/Message/module/Message';
 import {ProfileReducer as profile} from '../routes/Profile/module/Profile';
@@ -20,6 +22,14 @@ import {RequestForRidesReducer as requestRide} from '../routes/Drivers/container
 import {MessageDriverReducer as messageDriver} from '../routes/Drivers/container/MessageReducer';
 
 import {ProfileDriverReducer as profileDriver } from "../routes/Drivers/container/ProfileReducer";
+
+import {StopActivityReducer as stopActivity } from "../routes/Drivers/container/StopActivityReducer";
+
+import { TripCompleteReducer as tripComplete } from "../routes/Drivers/container/TripCompleteReducer";
+
+import { NavigationDriverMapReducer as navigationDriverMap } from "../routes/viewtrips/module/NavigationDriverMap";
+
+
 
 export const MakeRootReducer = () => {
     return combineReducers({
@@ -40,7 +50,12 @@ export const MakeRootReducer = () => {
         drawer,
         requestRide,
         messageDriver,
-        profileDriver
+        profileDriver,
+        updateTrip,
+        profileDriverRider,
+        stopActivity,
+        tripComplete,
+        navigationDriverMap
 
     });
 }
