@@ -7,7 +7,8 @@ import {
     Dimensions,
     TouchableOpacity,
     Image,
-    ActivityIndicator
+    ActivityIndicator,
+    StatusBar
     
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
@@ -52,6 +53,10 @@ class ResetPassword extends React.Component {
         return(
 
         <View style={styles.container}>
+          <StatusBar 
+          backgroundColor="#11A0DC"
+          barStyle="light-content"
+          />
             <ScrollView>
 
             <View style={{height: deviceHeight, width: deviceWidth, alignItems: 'center', justifyContent: 'center'}}>

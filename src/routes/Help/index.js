@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import { StatusBar } from "react-native";
 import { Container, Header, Content, Accordion } from "native-base";
 
 const dataArray = [
@@ -11,6 +12,10 @@ export default class Help extends Component {
   render() {
     return (
       <Container>
+        <StatusBar 
+          backgroundColor="#11A0DC"
+          barStyle="light-content"
+          />
         <Content padder>
           <Accordion 
             dataArray={dataArray} 

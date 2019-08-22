@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import {View,Alert,TouchableOpacity,ActivityIndicator,} from "react-native";
+import {View,Alert,TouchableOpacity,StatusBar,} from "react-native";
 import {
   Content,
   Text,
@@ -14,7 +14,7 @@ import styles from "./style";
 import { Actions } from "react-native-router-flux";
 import { getUrl} from "../config";
 import AsyncStorage from '@react-native-community/async-storage';
-const avatar = require("../../../assets/contacts/user.png");
+const avatar = require("../../../assets/contacts/userprofile.jpg");
 
 
 class SideBar extends Component {
@@ -111,6 +111,10 @@ logout = async () => {
 
     return (
       <Container>
+        <StatusBar 
+          backgroundColor="#11A0DC"
+          barStyle="light-content"
+        />
         <Content
           bounces={false}
           style={{ flex: 1, backgroundColor: "#fff", top: -1 }}
@@ -216,23 +220,6 @@ logout = async () => {
                   />
                   <Text style={styles.text}>
                     Payment
-                  </Text>
-                </Left>
-              </ListItem>
-
-              <ListItem
-                button
-                noBorder
-                onPress={() => Actions.message()}
-              >
-                <Left>
-                  <Icon
-                    active
-                    name="notifications"
-                    style={{ color: "#777", fontSize: 26, width: 30 }}
-                  />
-                  <Text style={styles.text}>
-                    Message
                   </Text>
                 </Left>
               </ListItem>

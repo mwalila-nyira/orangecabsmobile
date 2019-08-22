@@ -7,8 +7,7 @@ import {
     TouchableOpacity,
     KeyboardAvoidingView,
     Keyboard,
-    Image,
-    CheckBox
+    StatusBar
 } from 'react-native';
 import {
     Container,
@@ -27,6 +26,7 @@ import {
  } from 'native-base';
 import styles from '../../styles';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import Icons from 'react-native-vector-icons/MaterialIcons';
 import { Actions } from 'react-native-router-flux';
 import DateTimePicker from 'react-native-modal-datetime-picker';
 import AsyncStorage from '@react-native-community/async-storage';
@@ -37,10 +37,6 @@ import { ActivityIndicator } from 'react-native-paper';
 //socket io
 import socketIo from 'socket.io-client';
 import { tsThisType } from '@babel/types';
-
-const uncheckedicon = require("../../../../assets/contacts/uncheckedcheckbox.png");
-
-const checkedicon = require("../../../../assets/contacts/checkedcheckbox.png");
 
 
 class Booknow extends React.Component {
@@ -120,7 +116,12 @@ class Booknow extends React.Component {
     render(){
         return(
             <Container>
+                <StatusBar 
+                    backgroundColor="#11A0DC"
+                    barStyle="light-content"
+                    />
                 <View style={styles.containerModal}>
+                    
                 <ScrollView>
                 <KeyboardAvoidingView>
                     
@@ -158,7 +159,7 @@ class Booknow extends React.Component {
                                             key={index}
                                             style={styles.btn}   
                                         >
-                                            <Image source={checkedicon} />
+                                            <Icons name="radio-button-checked" style={[styles.icon,{color: '#11A0DC',fontSize:25}]} />
                                             <Text >{method}</Text>
                                         </TouchableOpacity>
                                         :
@@ -167,7 +168,7 @@ class Booknow extends React.Component {
                                             style={styles.btn}
                                             onPress={()=> this.handlePaymentOption(index)}   
                                         >
-                                            <Image source={uncheckedicon} />
+                                            <Icons name="radio-button-unchecked" style={[styles.icon,{color: '#F89D29',fontSize:25}]} />
                                             <Text >{method}</Text>
                                         </TouchableOpacity>
                                     }
@@ -245,7 +246,7 @@ class Booknow extends React.Component {
                                 onPress={() => this._cancelBook()}
                                 opacity="0.6"
                             >
-                                <Text style={[styles.buttonTextSignup, {color: '#fed136'}]}>Cancel</Text>
+                                <Text style={[styles.buttonTextSignup, {color: '#F89D29'}]}>Cancel</Text>
                             </TouchableOpacity>
                             {this.state.isCancelled == true && 
                                 <ActivityIndicator size="large" color="#F89D29" />}
@@ -257,11 +258,11 @@ class Booknow extends React.Component {
                     <FooterTab style={styles.footerContainer} >
 
                         <Button vertical onPress={() => Actions.help()}>
-                            <Icon name="eye" size={20} color={"#F89D29"} />
+                            <Icon name="eye" size={20} color={"#11A0DC"} />
                             <Text style={{fontSize:12, color:"grey"}}>Help</Text>
                         </Button>
-                        <Button vertical onPress={() => Actions.message()}>
-                            <Icon active name="envelope-o" size={20} color={"#F89D29"} />
+                        <Button vertical onPress={() => Actions.profile()}>
+                            <Icon active name="envelope-o" size={20} color={"#11A0DC"} />
                             <Text style={{fontSize:12, color:"grey"}}>Message</Text>
                         </Button>
 
@@ -327,6 +328,7 @@ class Booknow extends React.Component {
                 body:JSON.stringify({
                       pickup:this.props.requestRide.pickUpLocation,
                       dropoff: this.props.requestRide.dropoffLocation,
+                      dropoffPlaceId:this.props.requestRide.destinationPlaceId,
                       distance:this.props.requestRide.distanceInKm,
                       duration:this.props.requestRide.duration,
                       price:this.props.requestRide.price,
@@ -337,6 +339,7 @@ class Booknow extends React.Component {
                       datePicker: this.state.datetimepicklocation,
                       pickuplatitude:this.props.requestRide.pickUpLocationLat,
                       pickuplongitude:this.props.requestRide.pickUpLocationLng,
+                      pickupPlaceId:this.props.requestRide.pickupPlaceId,
                       dropofflatitude:this.props.requestRide.dropoffLocationLat,
                       dropofflongitude:this.props.requestRide.dropoffLocationLng,
                       status:this.state.status,

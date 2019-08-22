@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {Modal, View, Text, TouchableOpacity } from 'react-native'
+import {Modal, View, Text, TouchableOpacity,StatusBar} from 'react-native'
 import { WebView } from 'react-native-webview';
 import {Header, Left, Body, Button} from 'native-base';
 import styles from '../../styles';
@@ -8,12 +8,17 @@ import { getUrl } from '../../config';
 
 const PaymentModal = (props)=>(
     <View>
+      
         <Modal 
             animationType="slide"
             transparent={false}
             visible={props.showMyModal}
             onRequestClose={props.hideModal}>
             <View>
+              <StatusBar 
+          backgroundColor="#11A0DC"
+          barStyle="light-content"
+          />
              <Header style={{backgroundColor:"#11A0DC"}} iosBarStyle="light-content">
                 <Left>
                     <Button transparent onPress={props.hideModal}>

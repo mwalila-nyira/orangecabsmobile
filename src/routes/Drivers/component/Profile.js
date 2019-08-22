@@ -3,6 +3,7 @@ import {
     TouchableOpacity, 
     ActivityIndicator,
     Image,
+    StatusBar
 } from 'react-native';
 import { 
     Container, 
@@ -20,7 +21,6 @@ import {
 import styles from '../../styles';
 import Icon from 'react-native-vector-icons/FontAwesome';
 const avatars = require("../../../../assets/contacts/userprofile.jpg")
-const editicon = require("../../../../assets/contacts/iconpencil.png");
 import AsyncStorage from '@react-native-community/async-storage';
 import { Actions } from 'react-native-router-flux';
 import { getUrl} from "../../config";
@@ -74,18 +74,50 @@ export default class ProfileDriver extends Component {
           }   
     }
     
+      //Logoutapp
+    logout = async () => {
+
+        let mobile = await AsyncStorage.getItem("mobile_driver");
+        let token = await AsyncStorage.getItem("token_driver");
+
+        await fetch(`${getUrl}logoutapp.php`,{
+                method: "POST",
+                headers:{
+                    "Accept": "application/json",
+                    "Content-type": "application/json"
+                },
+                body:JSON.stringify({
+                    mobile:mobile,
+                    token:token
+                })
+            })
+            .then((response) => response.json())
+            .then((responseJson) => {
+                if(responseJson === "ok"){
+                    AsyncStorage.removeItem("mobile_driver");
+                    AsyncStorage.removeItem("token_driver");
+                    Actions.accueil();
+                }else{
+                    Alert.alert("Failed",JSON.stringify(responseJson)),[{text: "Okay"}];
+                }
+            }).catch((error) => {
+                alert("Try later or check your network!");
+                console.error(error);
+            });
+    }
+    
     render() {
         return (
         <Container>
             <Header style={{backgroundColor:"#11A0DC"}} 
                 iosBarStyle="light-content"
-                androidStatusBarColor="#F89D29">
+                androidStatusBarColor="#11A0DC">
                     <Left>
                         <TouchableOpacity 
                             onPress={() =>Actions.driver()}
                             opacity="0.6"
                         >
-                            <Icon name="chevron-left" style={[styles.icon,{color: '#FFFFFF'}]} />
+                            <Icon name="chevron-left" style={[styles.icon,{color: '#FFFFFF',fontSize:25}]} />
                         </TouchableOpacity>
                     </Left>
                     <Body>
@@ -102,7 +134,7 @@ export default class ProfileDriver extends Component {
                     <CardItem>
                         <Thumbnail square source={avatars} />
                         <TouchableOpacity>
-                            <Image source={editicon} />
+                            <Icon name="edit" style={[styles.icon,{color: '#FFFFFF',fontSize:25}]} />
                         </TouchableOpacity>
                     </CardItem>
                     
@@ -111,11 +143,6 @@ export default class ProfileDriver extends Component {
                         <Body>
                             <Text>{this.state.username}</Text>
                         </Body>
-                        {/* <Right>
-                            <TouchableOpacity>
-                                <Image source={editicon} />
-                            </TouchableOpacity>
-                        </Right> */}
                     </CardItem>
                     
                     <CardItem>
@@ -123,11 +150,6 @@ export default class ProfileDriver extends Component {
                         <Body>
                             <Text>{this.state.email}</Text>         
                         </Body>
-                        {/* <Right>
-                            <TouchableOpacity>
-                                <Image source={editicon} />
-                            </TouchableOpacity>
-                        </Right> */}
                     </CardItem>
                     
                     <CardItem>
@@ -135,11 +157,6 @@ export default class ProfileDriver extends Component {
                         <Body>
                             <Text>hidden</Text>
                         </Body>
-                        {/* <Right>
-                            <TouchableOpacity opacity="0.6">
-                                <Image source={editicon} />
-                            </TouchableOpacity>
-                        </Right> */}
                     </CardItem>
                     
                     <CardItem footer>
@@ -151,23 +168,14 @@ export default class ProfileDriver extends Component {
             <Footer style={{marginTop:'auto'}}>
             <FooterTab style={[styles.footerContainer]} >
                 
-                <Button vertical  onPress={() => Actions.driver()}>
-                    <Icon name="home" size={20} color={"#F89D29"} />
-                    <Text style={{fontSize:12, color:"grey"}}>Home</Text>
-                </Button>
-
                 <Button vertical  onPress={() => Actions.requestRide()}>
                     <Icon name="eye" size={20} color={"#F89D29"} />
-                    <Text style={{fontSize:12, color:"grey"}}>Requests</Text>
+                    <Text style={{fontSize:12, color:"grey"}}>Requests Assigned</Text>
                 </Button>
 
-                <Button vertical active onPress={() => Actions.profileDriver()}>
-                    <Icon name="user" size={20} color={"#F89D29"} />
-                    <Text style={{fontSize:12, color:"grey"}}>Profile</Text>
-                </Button>
-                <Button vertical  onPress={() => Actions.messageDriver()}>
-                    <Icon active name="envelope-o" size={20} color={"#F89D29"} />
-                    <Text style={{fontSize:12, color:"grey"}}>Message</Text>
+                <Button vertical  onPress={() => this.logout()}>
+                    <Icon name="power-off" size={20} color={"#F89D29"} />
+                    <Text style={{fontSize:12, color:"grey"}}>Logout</Text>
                 </Button>
 
             </FooterTab>

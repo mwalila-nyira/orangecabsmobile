@@ -8,6 +8,7 @@ import {View,
     StyleSheet,
     TextInput,
     Keyboard,
+    StatusBar
 } from 'react-native';
 import {Container,} from 'native-base';
 import { Actions } from 'react-native-router-flux';
@@ -135,6 +136,7 @@ class Home extends React.Component {
       const pickUpLocation = json.routes[0].legs[0].start_address ;
       const pickUpLocationLat = json.routes[0].legs[0].start_location.lat;
       const pickUpLocationLng = json.routes[0].legs[0].start_location.lng;
+      const pickupPlaceId = json.geocoded_waypoints[0].place_id;
       // console.log([pickUpLocation,pickUpLocationLat,pickUpLocationLng);
       
       //drop off location
@@ -166,12 +168,14 @@ class Home extends React.Component {
         pickUpLocation: pickUpLocation,
         pickUpLocationLat:pickUpLocationLat,
         pickUpLocationLng:pickUpLocationLng,
+        pickupPlaceId:pickupPlaceId,
         dropoffLocationLat:dropoffLocationLat,
         dropoffLocation:dropoffLocation,
         dropoffLocationLng:dropoffLocationLng,
         distanceInKm:distanceInKm,
         price:price,
-        duration:duration 
+        duration:duration,
+        destinationPlaceId:destinationPlaceId, 
       };
       // console.log(directionsData);
       //set data into differents variables for using later
@@ -180,6 +184,7 @@ class Home extends React.Component {
         predictions: [],
         directionsData,
         destination: destinationName,
+        destinationPlaceId:destinationPlaceId,
         //route response for requesting a book
         routeResponse: json,
         
@@ -205,19 +210,17 @@ class Home extends React.Component {
     //send data to the next page for completing ride
     // AsyncStorage.setItem('request_ride',this.state.directionsData);
     Actions.modal({requestRide:this.state.directionsData});
-    
-    
   }
     
   render(){
       
-      let marker = null;
+      // let marker2 = null;
       
-      if(this.state.focusedLocation){
-        marker = <MapView.Marker coordinate={this.state.focusedLocation} title="My location"/>
-      }
+      // if(this.state.focusedLocation){
+      //   marker2 = <MapView.Marker coordinate={this.state.focusedLocation} title="My location"/>
+      // }
 
-      let marker2 = null;
+      let marker = null;
       let detailsDirections = null;
       //chech if the pointCoords is not null > 1 display a marker polyline
       if(this.state.pointCoords.length > 1){
@@ -281,6 +284,11 @@ class Home extends React.Component {
     return(
         <Container>
             <View style={styles.container}>
+            <StatusBar 
+                backgroundColor="#11A0DC"
+                // iosBarStyle="light-content"
+                barStyle="light-content"
+              />
                 <MapView
                     // ref={map => {this.map = map}}
                     provider={PROVIDER_GOOGLE}
@@ -298,8 +306,8 @@ class Home extends React.Component {
                         strokeColor="red"
                         strokeWidth={4}
                     />
-                    {marker}
-                    {marker2}                  
+                    {/* {marker2} */}
+                    {marker}                  
                 </MapView>
         
                 <View style={{marginTop: 50}}>

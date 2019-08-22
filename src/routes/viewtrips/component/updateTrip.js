@@ -7,7 +7,7 @@ import {
   KeyboardAvoidingView,
   ActivityIndicator,
   TouchableHighlight,
-  Image,
+  StatusBar,
   Keyboard,
 } from 'react-native';
 
@@ -25,6 +25,7 @@ import {
     Right
 } from 'native-base';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import Icons from 'react-native-vector-icons/MaterialIcons';
 import styles from '../../styles';
 import moment from 'moment';
 import DateTimePicker from 'react-native-modal-datetime-picker';
@@ -32,10 +33,6 @@ import { getUrl } from "../../config";
 import { Actions } from 'react-native-router-flux';
 import apiKey from "../../google_api_key";
 import PolyLine from '@mapbox/polyline';
-
-const uncheckedicon = require("../../../../assets/contacts/uncheckedcheckbox.png");
-
-const checkedicon = require("../../../../assets/contacts/checkedcheckbox.png")
 
 class UpdateTripModal extends Component {
     constructor(props){
@@ -293,6 +290,10 @@ class UpdateTripModal extends Component {
     </TouchableHighlight> )
     return (
         <Container>
+            <StatusBar 
+                backgroundColor="#11A0DC"
+                barStyle="light-content"
+                />
             <Header style={{backgroundColor:"#11A0DC"}} iosBarStyle="light-content">
                       <Left>
                           <Button transparent onPress={()=>Actions.viewtrip()}>
@@ -338,20 +339,20 @@ class UpdateTripModal extends Component {
                                     <Body>
                                     {this.state.payment == method ? 
                                         <TouchableOpacity 
-                                            key={index}
+                                            key={method}
                                             style={styles.btn}   
                                         >
-                                            <Image source={checkedicon} />
-                                            <Text key={index}>{method}</Text>
+                                            <Icons name="radio-button-checked" style={[styles.icon,{color: '#11A0DC',fontSize:25}]} />
+                                            <Text key={method}>{method}</Text>
                                         </TouchableOpacity>
                                         :
                                         <TouchableOpacity
-                                            key={index}
+                                            key={method}
                                             style={styles.btn}
                                             onPress={()=> this.handlePaymentOption(method)}   
                                         >
-                                            <Image source={uncheckedicon} />
-                                            <Text key={index}>{method}</Text>
+                                            <Icons name="radio-button-unchecked" style={[styles.icon,{color: '#F89D29',fontSize:25}]} />
+                                            <Text key={method}>{method}</Text>
                                         </TouchableOpacity>
                                     }
                                     </Body>

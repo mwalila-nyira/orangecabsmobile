@@ -98,7 +98,8 @@ export default {
   },
   icon: {
     color:"#000",
-    fontSize:20
+    fontSize:20,
+    paddingRight:10
   },
   headerText:{
       color:"#fff",
@@ -169,4 +170,22 @@ export default {
     // paddingRight:30
   },
 
+  //chat message style
+  ContainerMessage:{
+    // ...absoluteFillObject,
+    flex: 1,
+    backgroundColor:"#FFFFFF"
+    
+  },
+  messageInput:{
+    height:40,
+    borderWidth:0.5,
+    marginLeft:5,
+    marginRight:5,
+    // padding:15,
+    backgroundColor:'#fff',
+    opacity:0.9,
+    borderRadius:7,
+    width:300
+  }
 };

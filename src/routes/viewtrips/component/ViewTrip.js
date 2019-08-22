@@ -8,7 +8,8 @@ import {
     KeyboardAvoidingView,
     FlatList,
     ActivityIndicator,
-    Alert,
+    StatusBar,
+    Alert
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import {
@@ -20,6 +21,8 @@ import {
     Card, 
     CardItem,
     Left, 
+    Thumbnail,
+    Button,
     Right} from 'native-base';
 import { Actions } from 'react-native-router-flux';
 import styles from '../../styles';
@@ -31,8 +34,6 @@ import { getUrl } from "../../config";
 import moment from 'moment';
 import PaymentModal from '../../Modal/component/paymentModal';
 
-const edittrip = require("../../../../assets/contacts/editproperty.png");
-const finderdriver = require("../../../../assets/contacts/userprofile.jpg");
 
 class ViewTrip extends React.Component {
     
@@ -51,12 +52,6 @@ class ViewTrip extends React.Component {
             amount:0,
             userId:null,
             tripId:null,
-            payment:null,
-            destination:'',
-            departure:'',
-            date:'',
-            nameofonerider:'',
-            numberofriders:'',
             cancelled:false,
             paymentStatus:false,
             isDeleted:false,
@@ -66,28 +61,36 @@ class ViewTrip extends React.Component {
             isLoadingHistoryPay:false, 
             canGoBack:false,
             isUpdatedTrip:false,
-            modalVisibleUpdate:false,
             focusedLocation:{
                 latitude:0,
                 longitude:0,
             },
             
             //update data tripId
-            updateDatas:{}
+            updateDatas:{},
             
-        };
+            //send message details
+            tripid:null,
+            driverid:null,
+            userid:null,
+            carid:null,
+            isSendMessage:false,
+            
+            //send trip_id and  user_id to the profilDriver.js
+           trip_id:null,
+           user_id:null,
+           isRequestDriver:false
+               
+        }; 
+        this.intervalID;
     }
-
+    
     componentDidMount(){
+         
         this._alltrips();
         this._historyTrips();
         this._trippaid();
         this._paymenthistory();
-    }
-       
-    //show Modal
-    showModal(){
-        this.setState({modalVisible:true})
     }
 
      //Payment modal
@@ -155,11 +158,7 @@ class ViewTrip extends React.Component {
           }, 2000); 
 
     }
-    
-    hideupdateModal = () => {
-        this.setState({modalVisibleUpdate:false})
-    }
-    
+
     _alltrips = async () => {
         this.setState({isLoadingTrip:true});
         let mobile = await AsyncStorage.getItem('mobile');
@@ -168,7 +167,9 @@ class ViewTrip extends React.Component {
             await fetch(`${getUrl}alltrips.php?mobile=${mobile}&token=${token}`)
             .then((response) => response.json())
             .then((res) =>{
-                this.setState({isLoadingTrip:false,data:res})
+                this.setState({isLoadingTrip:false,data:[...res]})
+                // call getData() again in 5 seconds
+                this.intervalID = setTimeout(this._alltrips.bind(this), 5000);
                 // alert(this.state.data)
             }
             ).catch(err =>{
@@ -227,15 +228,15 @@ class ViewTrip extends React.Component {
                     setTimeout(() => {
                         this.setState({
                             isLoadingTripPaid:false,
-                            trippaid:res,
+                            trippaid:[...res],
                         });
                     }, 2000);
                 }
                 else{
                     this.setState({
                         isLoadingTripPaid:false,
-                        messageTripPaid:res});
-                    // alert(JSON.stringify(res));
+                        messageTripPaid:JSON.stringify(res)});
+                    // alert();
                 }
                 
             }).catch((error)=>{
@@ -280,19 +281,38 @@ class ViewTrip extends React.Component {
     }
     
     //request driver
-    requestDriver = async () =>{
-        alert('Sending request ......')
+    _requestDriver = async (trip_id, user_id,driver_id,car_id) =>{
+        this.setState({isRequestDriver:true,});
+        setTimeout(() => {
+            this.setState({
+                trip_id:trip_id,
+                user_id:user_id,
+                isRequestDriver:false
+            });
+            
+            if (driver_id > 0 && car_id > 0) {
+              // alert('TripId: '+this.state.trip_id+'userId: '+this.state.user_id)
+             Actions.profileDriverRider({tripId:this.state.trip_id,userId:this.state.user_id,tripData:this.state.data});  
+            }else{
+                this.setState({isRequestDriver:false,});
+                Alert.alert("Info","this trip is not assigned to a driver yet. Try again later");
+            }
+            
+             
+        }, 2000);
     }
     
-    render(){ 
-          
+    render(){  
         return(
-            
             <Container style={styles.containerModal}>
+                <StatusBar 
+                    backgroundColor="#11A0DC"
+                    barStyle="light-content"
+                    />
                 {/* Load trips */}
                 {this.state.isLoadingTrip == true ? <ActivityIndicator size="large" color="#F89D29" /> :
                 
-                <View>
+                <View style={{marginBottom:50}}>
                     <ScrollView>
                     <KeyboardAvoidingView>
 
@@ -315,64 +335,94 @@ class ViewTrip extends React.Component {
                             <Text style={{fontWeight:'bold',marginTop:2,}}>Price: ZAR {item.price}</Text>
                             <Text style={{fontWeight:'bold',marginTop:2,}}>Trip status: {item.status_pay}</Text>
                             <Text style={{fontWeight:'bold',marginTop:2,}}>Payment Method: {item.payment}</Text>
+                            
+                            {item.driver_id > 0 && item.car_id > 0 ? 
+                            <Text style={{fontWeight:'bold',marginTop:2,color:'#2998ff'}}>Info: You can now request the driver!</Text> :
+                            <Text style={{fontWeight:'bold',marginTop:2,color:'red'}}>Info: Waiting driver to be assigned to this trip !</Text>
+                            }
+                            
                             </Body>  
                         </CardItem>
-                        <CardItem>
-                                <Left>
-                                    {item.payment !== 'cash' ?
-                                    <TouchableOpacity
-                                    opacity="0.6"
-                                    underlayColor="transparent"
-                                    onPress={() => this._paynow(item.price,item.trip_id,item.user_id)}   
-                                    >
-                                        <Image 
-                                            source={{uri:"https://www.payfast.co.za/images/buttons/light-small-paynow.png"}}
-                                                style={{width:165,height:36}}
-                                            />
-                                    </TouchableOpacity>
-                                    :
+                        <View style={{flexDirection:"row",justifyContent:"space-between",padding:10}}>
+                        {item.payment !== 'cash' ?
+                                <TouchableOpacity
+                                opacity="0.6"
+                                underlayColor="transparent"
+                                onPress={() => this._paynow(item.price,item.trip_id,item.user_id)}   
+                                >
+                                    <Image 
+                                        source={{uri:"https://www.payfast.co.za/images/buttons/light-small-paynow.png"}}
+                                            style={{width:165,height:36}}
+                                    />
+                                </TouchableOpacity>
+                                :
+                                <View>
                                     <TouchableOpacity
                                         opacity="0.6"
                                         underlayColor="transparent"
-                                        onPress={() => this.requestDriver(item.price,item.trip_id,item.user_id)}   
+                                        onPress={() => this._requestDriver(item.trip_id,item.user_id,item.driver_id,item.car_id)}   
                                         style={{flexDirection:"row",alignItems:"center"}}
                                     >
-                                        <Image source={finderdriver} style={{width:30,height:30}}/>
-                                        <Text>Request Driver</Text>
+                                        <Icon name="taxi" style={[styles.icon,{color: '#11A0DC'}]}/>
+                                        {item.driver_id > 0 ? 
+                                        <Text>Request Driver</Text> :
+                                        <Text>Waiting Driver...</Text>
+                                        }
+                                        
                                     </TouchableOpacity>
-                                    } 
-                                </Left>
-                                
-                                <Body>
-                                
-                                    {this.state.isUpdatedTrip == true ?    <ActivityIndicator 
+                                    
+                                    {this.state.isRequestDriver == true && 
+                                    <ActivityIndicator 
                                         size="large" 
                                         color="#F89D29"
-                                        animating={this.state.isUpdatedTrip}
-                                    />:<TouchableOpacity
-                                        opacity="0.6"
-                                        onPress={() => { this.updateData(item.trip_id,item.user_id,item.departure,item.departureLatitude,item.departureLongitude,item.destination,item.amountofriders,item.nameofonerider,item.payment,item.date)}}
-                                        style={{marginLeft:100,marginTop:10}}
-                                    >
+                                    />
                                     
-                                        <Image source={edittrip} />
-                                    </TouchableOpacity>}
+                                    }
+                                    
+                                </View>
                                 
-                                </Body>
+                                }
                                 
-                                <Right>
-                                    <TouchableOpacity
-                                        opacity="0.6"
-                                        onPress={() => { this.deleteData(item.trip_id)}}
-                                    >
-                                        <Text transparent value={item.trip_id}> 
-                                        <Icon name="trash" color="red" style={{fontSize:25}}/>  
-                                        </Text>
-                                    </TouchableOpacity>
-                                    {this.state.isDeleted == true &&    <ActivityIndicator size="large" color="#F89D29"/>}
-                                </Right>
+                                {this.state.isUpdatedTrip == true ?    <ActivityIndicator 
+                                    size="large" 
+                                    color="#F89D29"
+                                    animating={this.state.isUpdatedTrip}
+                                />:<TouchableOpacity
+                                    opacity="0.6"
+                                    onPress={() => { this.updateData(item.trip_id,item.user_id,item.departure,item.departureLatitude,item.departureLongitude,item.destination,item.amountofriders,item.nameofonerider,item.payment,item.date)}}
+                                    // style={{marginLeft:80}}
+                                >
                                 
-                            </CardItem>
+                                    <Icon name="edit" size={25} color={"#11A0DC"}/>
+                                </TouchableOpacity>}
+                                
+                                <TouchableOpacity
+                                    opacity="0.6"
+                                    onPress={() => { this.deleteData(item.trip_id)}}
+                                >
+                                    <Text transparent value={item.trip_id}> 
+                                    <Icon name="trash" color="red" style={{fontSize:25}}/>  
+                                    </Text>
+                                </TouchableOpacity>
+                                {this.state.isDeleted == true &&    <ActivityIndicator size="large" color="#F89D29"/>} 
+                            
+                        </View>
+                        {/* <CardItem>
+                            <Left>
+                                
+                                
+                            </Left>
+                            
+                            <Body>
+                            
+                                
+                            
+                            </Body>
+                            
+                            <Right>
+                                
+                            </Right>                               
+                            </CardItem> */}
                         </Card>
                     </Content>                       
                     }
@@ -389,7 +439,7 @@ class ViewTrip extends React.Component {
                             tripId={this.state.tripId}
                             userId={this.state.userId}
                             hideModal={this._cancelledTransaction}         
-                        />
+                        /> 
                  </View> 
                  }
                  

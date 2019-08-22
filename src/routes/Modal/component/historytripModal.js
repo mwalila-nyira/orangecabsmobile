@@ -6,7 +6,7 @@ import {
   View, Alert,FlatList,ScrollView,
   KeyboardAvoidingView,
   ActivityIndicator ,
-  Image
+  StatusBar
 } from 'react-native';
 import {Content, Card, CardItem,Left,Right,Body,Button,Header} from 'native-base';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -14,8 +14,6 @@ import styles from '../../styles';
 import moment from 'moment';
 import { getUrl,} from "../../config";
 import { Actions } from 'react-native-router-flux';
-
-const tripicon = require("../../../../assets/contacts/icons8orderhistory.png")
 
 class HistoryTripModal extends Component {
   state = {
@@ -57,12 +55,17 @@ class HistoryTripModal extends Component {
   render() {
     return (
       <View style={{marginTop:0}}>
+        
         <Modal
           animationType="slide"
           transparent={false}
           visible={this.state.modalVisible}
           onRequestClose={() => this.setModalVisible(!this.state.modalVisible)}>
             <View style={{marginTop: 0}}>
+              <StatusBar 
+          backgroundColor="#11A0DC"
+          barStyle="light-content"
+          />
               <Header style={{backgroundColor:"#11A0DC"}} iosBarStyle="light-content">
                       <Left>
                           <Button transparent onPress={()=>this.setModalVisible(!this.state.modalVisible)}>
@@ -123,12 +126,10 @@ class HistoryTripModal extends Component {
             </View>
         </Modal>
 
-        {/* <View> */}
         <Button vertical onPress={() => {this.setModalVisible(true);}}>
-            {/* <Icon name="history" color="#F89D29" size={25} /> */}
-            <Image source={tripicon} style={{paddingTop:10}}/>
+            <Icon name="history" color="#11A0DC" size={25} />
           </Button>
-        {/* </View> */}
+
       </View>
     );
   }

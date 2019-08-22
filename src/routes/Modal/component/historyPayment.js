@@ -6,7 +6,7 @@ import {
   View, Alert,FlatList,ScrollView,
   KeyboardAvoidingView,
   ActivityIndicator,
-  Image
+  StatusBar
 } from 'react-native';
 import {Content, Card, CardItem,Left,Body,Button,Header} from 'native-base';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -15,8 +15,6 @@ import moment from 'moment';
 import { getUrl, } from "../../config";
 import { Actions } from 'react-native-router-flux';
 
-//icons 
-const paymenthist = require("../../../../assets/contacts/paymenthistoryfilled.png");
 
 class HistoryPaymentModal extends Component {
   state = {
@@ -55,12 +53,17 @@ class HistoryPaymentModal extends Component {
   render() {
     return (
       <View style={{marginTop:0}}>
+        
         <Modal
           animationType="slide"
           transparent={false}
           visible={this.state.modalVisible}
           onRequestClose={() => this.setModalVisible(!this.state.modalVisible)}>
             <View style={{marginTop: 0}}>
+            <StatusBar 
+          backgroundColor="#11A0DC"
+          barStyle="light-content"
+          />
               <Header style={{backgroundColor:"#11A0DC"}} iosBarStyle="light-content">
                       <Left>
                           <Button transparent onPress={()=>this.setModalVisible(!this.state.modalVisible)}>
@@ -125,7 +128,7 @@ class HistoryPaymentModal extends Component {
         {/* <View> */}
           <Button vertical onPress={() => {this.setModalVisible(true);}}>
             {/* <Icon name="calendar" color="#F89D29" size={25}  /> */}
-            <Image source={paymenthist} style={{marginRight:15}}/>
+            <Icon name="money" style={[styles.icon,{color: '#11A0DC',fontSize:25,paddingRight:20}]}/>
           </Button>
         {/* </View> */}
       </View>

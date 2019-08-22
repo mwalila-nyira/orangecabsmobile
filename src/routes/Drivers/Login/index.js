@@ -10,7 +10,8 @@ import {
     Image,
     KeyboardAvoidingView,
     Keyboard,
-    ActivityIndicator
+    ActivityIndicator,
+    StatusBar
 } from 'react-native';
 
 import styles from '../../styles';
@@ -81,6 +82,10 @@ class LoginDriver extends React.Component {
     render(){
         return(
             <View style={styles.container}>
+                <StatusBar 
+                    backgroundColor="#11A0DC"
+                    barStyle="light-content"
+                    />
             <ScrollView>
                 <KeyboardAvoidingView>
                 <View style={{height: deviceHeight, width: deviceWidth, alignItems: 'center', justifyContent: 'center'}}>
@@ -209,7 +214,7 @@ class LoginDriver extends React.Component {
                         this.setState({isLoading:false});
                         AsyncStorage.setItem('mobile_driver',userMobile);
                         AsyncStorage.setItem('token_driver',token);
-                        Actions.driver();
+                        Actions.requestRide();
                     }, 2000);
 
                 }else{

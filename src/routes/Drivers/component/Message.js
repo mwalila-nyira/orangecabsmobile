@@ -6,74 +6,117 @@ import {
     Alert,
     Dimensions,
     TouchableOpacity,
-    Image,
+    StyleSheet,
+    StatusBar
 } from 'react-native';
-import {Container,Header, Left, Body, Right,Content, Button,Footer, FooterTab} from 'native-base';
+import {
+  Container,
+  Content,
+  Header,
+  Left,
+  Body, 
+  Right
+} from 'native-base';
 import styles from '../../styles';
-import Icon from 'react-native-vector-icons/FontAwesome';
+// import Icon from 'react-native-vector-icons/MaterialIcons';
+import Icon from 'react-native-vector-icons/FontAwesome5';
 import { Actions } from 'react-native-router-flux';
-import { getUrl} from '../../config';
-
-const deviceWidth = Dimensions.get('window').width;
-const deviceHeight = Dimensions.get('window').height;
+import io from 'socket.io-client';
+import {serverExp} from '../../config';
+import { GiftedChat } from 'react-native-gifted-chat'
+import moment from 'moment'
 
 class MessageDriver extends React.Component {
-  state = {
-    messages: [],
+  constructor(props) {
+    super(props);
+    this.state = {
+      tripId:null,
+      userId:null,
+      driverId:null,
+      isConnect:null,
+      username:null,
+      messages: [],
+    };
+    this.socket
+  }
+  
+  componentDidMount(){
+    let that = this;
+    that.setState({
+      tripId:this.props.chatData.tripId,
+      userId:this.props.chatData.userId,
+      driverId:this.props.chatData.driverId,
+      isConnect:this.props.chatData.isconnect,
+      username:this.props.chatData.username,
+      createdAt:moment().format('YYYY-MM-DD HH:mm')
+    })
+    
+    // const socket = io(`${serverExp}`);
+    //socket io
+    this.socket = io(`${serverExp}`);
+    this.socket.on("chat message",msg=>{
+      this.setState({messages:[...this.state.messages,msg]})
+    })
+  }
+  
+  async _onSendMessage(messages = []) {
+    this.setState(previousState => ({
+      messages: GiftedChat.append(previousState.messages, messages),
+    }))
+    // alert(JSON.stringify(messages))
+    // submit message
+    this.socket.emit("chat message",this.state.messages)
+    //clear the textinput box
+    this.setState({messages:""})
   }
 
   render() {
+    
     return (
       <Container>
-        <Header style={{backgroundColor:"#11A0DC"}} 
+        <Header style={{backgroundColor:"#FFFFFF"}} 
           iosBarStyle="light-content"
-          androidStatusBarColor="#F89D29">
-            <Left>
+          androidStatusBarColor="#11A0DC">
+             <Left>
               <TouchableOpacity 
                 onPress={() =>Actions.driver()}
                 opacity="0.6"
               >
-                  <Icon name="chevron-left" style={[styles.icon,{color: '#FFFFFF'}]} />
+                  <Icon name="chevron-left" style={[styles.icon,{color: '#F89D29',marginTop:15}]} />
+                  <Text style={[styles.headerText, {color: '#333'}]}> </Text>
               </TouchableOpacity>
             </Left>
             <Body>
-                <Text style={styles.headerText}>Message Driver </Text>                        
+                <Text style={[styles.headerText, {color: '#333'}]}>Chat with : {this.state.username} </Text>                        
             </Body>
+            <Right>
+              {this.state.isConnect == 1 ?
+                <Icon name="toggle-on" style={[styles.icon,{color: '#28b485'}]} />
+                :
+                <Icon name="toggle-off" style={[styles.icon,{color: '#dc3545'}]} />
+              }
+            </Right>
         </Header>
 
-        <View style={styles.Container}>
-          <ScrollView>
-            <Content>
-              <Text>All message driver</Text>
-            </Content>
-          </ScrollView>
-        </View>
-        
-        <Footer style={{marginTop:'auto'}}>
-            <FooterTab style={[styles.footerContainer]} >
-                
-                <Button vertical  onPress={() => Actions.driver()}>
-                    <Icon name="home" size={20} color={"#F89D29"} />
-                    <Text style={{fontSize:12, color:"grey"}}>Home</Text>
-                </Button>
-
-                <Button vertical  onPress={() => Actions.requestRide()}>
-                    <Icon name="eye" size={20} color={"#F89D29"} />
-                    <Text style={{fontSize:12, color:"grey"}}>Requests</Text>
-                </Button>
-
-                <Button vertical  onPress={() => Actions.profileDriver()}>
-                    <Icon name="user" size={20} color={"#F89D29"} />
-                    <Text style={{fontSize:12, color:"grey"}}>Profile</Text>
-                </Button>
-                <Button vertical active onPress={() => Actions.messageDriver()}>
-                    <Icon active name="envelope-o" size={20} color={"#F89D29"} />
-                    <Text style={{fontSize:12, color:"grey"}}>Message</Text>
-                </Button>
-
-            </FooterTab>
-        </Footer> 
-      
+        <GiftedChat
+          messages={this.state.messages}
+          onSend={(messages) => {
+            //send message to the backend
+            this._onSendMessage(messages)
+          }
+          }
+          // _id={}
+          user={{
+            _id:this.state.userId,
+            // from: this.state.userId,
+            to: this.state.driverId,
+            username:this.state.username,
+            tripid:this.state.tripId,
+            carid: this.state.car_id
+            
+          }}
+          showUserAvatar
+        />
       </Container>
     );
   }
