@@ -47,15 +47,17 @@ class Home extends React.Component {
       locationChosen:false,
       directionsData:{},
 
-    }
-    //loadash with debounced  250,{ 'maxWait': 1000 }
-    // this.onChangeDestinationDebounced = _.debounce(this.onChangeDestination,1000);
+    };
+    this.watchID
   }
-  
   
   // componentDidMount
   componentDidMount(){
-   this.getCurrentLocationHandler(); 
+    this.getCurrentLocationHandler();
+  }
+  
+  componentWillUnmount() {
+    navigator.geolocation.clearWatch(this.watchID);
   }
   
   //pickup place manually
@@ -77,10 +79,9 @@ class Home extends React.Component {
       }
     })
   }
-
-  //get current location for the user
+  
   getCurrentLocationHandler(){
-    navigator.geolocation.getCurrentPosition(
+    this.watchID = navigator.geolocation.watchPosition(
       position => {
         const coordsEvent = {
           nativeEvent:{
@@ -213,23 +214,26 @@ class Home extends React.Component {
   }
     
   render(){
-      
-      // let marker2 = null;
-      
-      // if(this.state.focusedLocation){
-      //   marker2 = <MapView.Marker coordinate={this.state.focusedLocation} title="My location"/>
-      // }
-
-      let marker = null;
-      let detailsDirections = null;
-      //chech if the pointCoords is not null > 1 display a marker polyline
-      if(this.state.pointCoords.length > 1){
-      
-        marker2 =( <Marker 
-                  coordinate={this.state.pointCoords[this.state.pointCoords.length -1]}
-                  pinColor="#F89D29"
-                  title="Your Destination"
-                  /> );
+    
+    //checking the latitude 
+    if (!this.state.focusedLocation) return null;
+    
+    //placing the marker on the current location
+    let marker = null;
+    if(this.state.focusedLocation){
+      marker = <MapView.Marker coordinate={this.state.focusedLocation} title="My location"/>
+    }
+    
+    let marker2 = null;
+    let detailsDirections = null;
+    //chech if the pointCoords is not null > 1 display a marker polyline
+    if(this.state.pointCoords.length > 1){
+    
+      marker2 =( <Marker 
+                coordinate={this.state.pointCoords[this.state.pointCoords.length -1]}
+                pinColor="#F89D29"
+                title="Your Destination"
+                /> );
 
       detailsDirections =( <View style={styles.directionContainer}>
           <Text>From : {this.state.directionsData.pickUpLocation}</Text>
@@ -257,8 +261,8 @@ class Home extends React.Component {
                   }
               </View>
             </TouchableOpacity>
-      </View>);
-  }
+        </View>);
+      }
     
     //predictions autocomplete google places api
     const predictions = this.state.predictions.map(prediction => 
@@ -306,7 +310,7 @@ class Home extends React.Component {
                         strokeColor="red"
                         strokeWidth={4}
                     />
-                    {/* {marker2} */}
+                    {marker2}
                     {marker}                  
                 </MapView>
         

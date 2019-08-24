@@ -22,8 +22,8 @@ import apiKey from "../../google_api_key";
 import PolyLine from '@mapbox/polyline';
 import socketIo from 'socket.io-client';
 import icons from '../../styles';
-import RideModal from '../../Modal/component/RideModal'
-
+import RideModal from '../../Modal/component/RideModal';
+import BackgroundGeolocation from '@mauron85/react-native-background-geolocation';
 const { width, height } = Dimensions.get("window");
 
 const ASPECT_RATIO = width / height;
@@ -59,7 +59,7 @@ export default class ProfileDriver extends Component {
         };
         //Automatically Refreshing Data 
         this.intervalID;
-
+        this.watchID;
         this.socket;
     }
 
@@ -80,7 +80,53 @@ export default class ProfileDriver extends Component {
         //make a socket io connect
         this.socket = socketIo.connect(`${serverExp}`);
         
+        //background-geolocation configuration
+        BackgroundGeolocation.configure({
+            desiredAccuracy: BackgroundGeolocation.HIGH_ACCURACY,
+            stationaryRadius: 50,
+            distanceFilter: 50,
+            notificationTitle: 'Background tracking',
+            notificationText: 'enabled',
+            debug: true,
+            startOnBoot: false,
+            stopOnTerminate: true,
+            locationProvider: BackgroundGeolocation.ACTIVITY_PROVIDER,
+            interval: 10000,
+            fastestInterval: 5000,
+            activitiesInterval: 10000,
+            stopOnStillActivity: false,
+            // url: 'http://192.168.81.15:3000/location',
+            // httpHeaders: {
+            //   'X-FOO': 'bar'
+            // },
+            // // customize post properties
+            // postTemplate: {
+            //   lat: '@latitude',
+            //   lon: '@longitude',
+            //   foo: 'bar' // you can also add your own properties
+            // }
+          });
+          
+          //authorization of background-geolocation to run in the background
+          BackgroundGeolocation.on('authorization', (status) => {
+            console.log('[INFO] BackgroundGeolocation authorization status: ' + status);
+            if (status !== BackgroundGeolocation.AUTHORIZED) {
+              // we need to set delay or otherwise alert may not be shown
+              setTimeout(() =>
+                Alert.alert('App requires location tracking permission', 'Would you like to open app settings?', [
+                  { text: 'Yes', onPress: () => BackgroundGeolocation.showAppSettings() },
+                  { text: 'No', onPress: () => console.log('No Pressed'), style: 'cancel' }
+                ]), 1000);
+            }
+          });
+        
     }
+    
+    componentWillUnmount() {
+        // unregister all event listeners
+        BackgroundGeolocation.removeAllListeners();
+        navigator.geolocation.clearWatch(this.watchID);
+      }
     
       //pickup place manually
     pickuplocationHandler = event =>{
@@ -104,7 +150,7 @@ export default class ProfileDriver extends Component {
 
     //get current location for the user
     getCurrentLocationHandler(){
-        navigator.geolocation.getCurrentPosition(
+        this.watchID = navigator.geolocation.watchPosition(
         position => {
             const coordsEvent = {
             nativeEvent:{
@@ -227,30 +273,45 @@ export default class ProfileDriver extends Component {
     }
     
     acceptRiderRequest = async () =>{
-
+         // navigate to the rider side by openning google maps
+         const passengerLocation = this.state.pointCoords[
+            this.state.pointCoords.length - 1];
+            
         const driverId = this.props.data.driverId;
         const userId = this.props.data.userId;
         const tripId = this.props.data.tripId;
         const passengerLocationLatitude = this.props.data.departureLatitude;
         const passengerLocationLongitude = this.props.data.departureLongitude;
-                
-        const dataResponse = [
-            {
-                latitude: this.state.focusedLocation.latitude,
-                longitude: this.state.focusedLocation.longitude,
-            },
-            {
-                driverId:driverId,
-                userId:userId,
-                tripId:tripId
-            }];
             
-        //emit driver data include his location
-        this.socket.emit('driverLocation',dataResponse); 
+        BackgroundGeolocation.on('location', (focusedLocation) => {
+            // handle your locations here       
+            const dataResponse = [
+                {
+                    latitude: focusedLocation.latitude,
+                    longitude: focusedLocation.longitude,
+                },
+                {
+                    driverId:driverId,
+                    userId:userId,
+                    tripId:tripId
+                }];
+            
+            //emit driver data include his location
+            this.socket.emit('driverLocation',dataResponse);
+            
+        }); 
         
-         // navigate to the rider side by openning google maps
-        const passengerLocation = this.state.pointCoords[
-            this.state.pointCoords.length - 1];
+        BackgroundGeolocation.checkStatus(status => {
+            // you don't need to check status before start (this is just the example)
+            if (!status.isRunning) {
+              BackgroundGeolocation.start(); //triggers start on start event
+            }
+        });
+        
+        BackgroundGeolocation.on('stop', () => {
+            // console.log('[INFO] BackgroundGeolocation service has been stopped');
+            Actions.requestRide();
+        });
                
         if (Platform.OS === "ios") {
             Linking.canOpenURL(`http://maps.apple.com/?daddr=${passengerLocation.latitude},${passengerLocation.longitude}`)
@@ -277,6 +338,7 @@ export default class ProfileDriver extends Component {
                 .catch((err) => console.error('An error occurred', err));
 
             }
+        //sending the location in the background to the rider then i can be able in real time see how the driver in comming 
     }
 
     render() {
@@ -298,24 +360,24 @@ export default class ProfileDriver extends Component {
             </ Marker>
         }
 
-        return ( 
-            <Container>
-                <View style ={ styles.container}>
-                    <StatusBar backgroundColor = "#11A0DC"
-                    barStyle = "light-content" />
-                    
-                    <MapView
-                // ref={map => {this.map = map}}
-                provider={PROVIDER_GOOGLE}
-                style={styles.map}
-                initialRegion={this.state.focusedLocation}
-                onPress={this.pickuplocationHandler}
-                region={this.state.focusedLocation}
-                showsCompass={false} 
-                showsUserLocation={true}
-                ref={ref => this.map = ref}
-            >
-            
+    return ( 
+        <Container>
+            <View style ={ styles.container}>
+                <StatusBar backgroundColor = "#11A0DC"
+                barStyle = "light-content" />
+                
+                <MapView
+                    // ref={map => {this.map = map}}
+                    provider={PROVIDER_GOOGLE}
+                    style={styles.map}
+                    initialRegion={this.state.focusedLocation}
+                    onPress={this.pickuplocationHandler}
+                    // region={this.state.focusedLocation}
+                    showsCompass={false} 
+                    showsUserLocation={true}
+                    ref={ref => this.map = ref}
+                >
+        
                 <Polyline
                     coordinates={this.state.pointCoords}
                     strokeColor="red" // fallback for when 
@@ -371,9 +433,9 @@ export default class ProfileDriver extends Component {
                     
                 </View>
 
-            </Container>
+        </Container>
 
-        );
+    );
     }
 }
 
@@ -410,3 +472,13 @@ const styles = StyleSheet.create({
     }
 
 });
+
+
+
+
+
+
+
+
+
+

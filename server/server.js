@@ -100,7 +100,7 @@ io.on("connection", socket => {
     
     //looking for passengers driver side
     socket.on("driverLocation", dataResponse => {
-        console.log(" Data send by Driver for his location"+dataResponse);
+        console.log(" Data send by Driver for his location"+ JSON.stringify(dataResponse));
         // emit driver location
         io.sockets.emit('driverLocation',dataResponse);
         

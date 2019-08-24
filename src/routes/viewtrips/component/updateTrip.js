@@ -336,7 +336,7 @@ class UpdateTripModal extends Component {
                         <ListItem>
                             {this.state.paymentMethod.map((method,index)=>{
                                return(    
-                                    <Body>
+                                    <Body key={index}>
                                     {this.state.payment == method ? 
                                         <TouchableOpacity 
                                             key={method}

@@ -64,7 +64,7 @@ class ProfileDriver extends Component {
       };
         //Automatically Refreshing Data 
       this.intervalID;
-      
+      this.watchID;
       this.socket;
   }
     
@@ -78,6 +78,9 @@ class ProfileDriver extends Component {
     //socket io connection
     this.socket = socketIo.connect(`${serverExp}`);
   
+  }
+  componentWillUnmount() {
+    navigator.geolocation.clearWatch(this.watchID);
   }
    
   //request driver
@@ -130,7 +133,7 @@ class ProfileDriver extends Component {
 
   //get current location for the user
   getCurrentLocationHandler(){
-    navigator.geolocation.getCurrentPosition(
+    this.watchID = navigator.geolocation.watchPosition(
       position => {
         const coordsEvent = {
           nativeEvent:{
@@ -148,7 +151,7 @@ class ProfileDriver extends Component {
         );
         // this.getRouteDirections();
   }
-  
+
   getDirectionRiderDriver = async (place_id,originLatitude,originLongitude) => {
     try {
       const response = await fetch(
@@ -262,20 +265,6 @@ class ProfileDriver extends Component {
 
           }
         });
-          
-        //listenning for directionsDriver event   
-        // this.socket.on("directionsDriver",data =>{
-          
-        //   if(data[1].driverId == driverId && data[1].userId == userId && data[1].tripId == tripId){
-            
-        //     this.getDirectionRiderDriver(data[0].geocoded_waypoints[0].place_id,originLatitude,originLongitude);
-            
-        //     Alert.alert("Info", "Driver found. Waiting for confirmation  "),[{text: 'Okay'}]
-            
-        //     this.setState({directionsDriverState:true});
-        //   }
-
-        // }); 
         
         this.map.fitToCoordinates(pointCoords, {
           edgePadding: { top: 20, bottom: 20, left: 20, right: 20 }
@@ -287,21 +276,54 @@ class ProfileDriver extends Component {
     }
   }
   
-  confirmRequest = async () => {
-    this.socket.emit("taxiRequest",this.state.routeResponse);
-    this.setState({isWaintingDriver:true});
-  }
   
   render() {
     
-    // let marker = null;
+    //check the longitude and latitude
+    // if (!this.focusedLocation) return null;
+    
+    let marker = null;
     let marker2 = null;
     let buttomButtonFunction = null;
     let driverMarker = null;
+    
+    if (this.state.directionsDriverState) {
       
-    // if(this.state.focusedLocation){
-    //   marker = <MapView.Marker coordinate={this.state.focusedLocation} title="My location"/>
-    // }
+      buttomButtonFunction = (<TouchableOpacity opacity = "0.6"
+      onPress = {() => this.confirmRequest()}
+      style = {{ padding: 7, backgroundColor: "#F89D29", color: "#FFFFFF", flexDirection: "row" }} >   
+       <Icon name = "place"
+      style = {[icons.icon, { color: '#FFFFFF' }]}/> 
+          <Text style = {{ color: "#fff", fontSize: 15 }}>Confirm </Text>
+          
+      </TouchableOpacity>)
+    }else if (this.state.driverIsOnTheWay) {
+      
+      buttomButtonFunction =(<View  
+      style = {{ padding: 7, backgroundColor: "#F89D29", color: "#FFFFFF", flexDirection: "row" }} >   
+      <Icon name = "place"
+      style = {[icons.icon, { color: '#FFFFFF' }]}/> 
+        <Text style = {{ color: "#fff", fontSize: 15 }}>Driver on the way</Text>   
+      </View>)
+      
+    }else{
+      
+      buttomButtonFunction = (<TouchableOpacity
+      opacity="0.6"
+      onPress={() =>this.requestDriverLocation()}
+      style={{padding:7,backgroundColor:"#F89D29",color:"#FFFFFF",flexDirection:"row"}}>
+        
+      <Icon name="place" style={[icons.icon,{color: '#FFFFFF'}]} />
+      {this.state.isFindingDistanceDriver == true ?
+        <ActivityIndicator size="small" color="#FFFFFF" />:
+        <Text style={{color:"#fff", fontSize:15}}>Find Driver</Text>
+      } 
+    </TouchableOpacity>)
+    }
+
+    if(this.state.focusedLocation){
+      marker = <MapView.Marker coordinate={this.state.focusedLocation} title="My location"/>
+    }
     
     if (this.state.pointCoords.length > 1) {
       marker2 = (< Marker coordinate = { this.state.pointCoords[this.state.pointCoords.length - 1]}> 
@@ -332,8 +354,8 @@ class ProfileDriver extends Component {
                 style={styles.map}
                 initialRegion={this.state.focusedLocation}
                 onPress={this.pickuplocationHandler}
-                region={this.state.focusedLocation}
-                showsCompass={false} 
+                // region={this.state.focusedLocation}
+                showsCompass={true} 
                 showsUserLocation={true}
                 ref={ref => this.map = ref}
             >
@@ -343,7 +365,7 @@ class ProfileDriver extends Component {
                     strokeColor="red" // fallback for when 
                     strokeWidth={4}
                 />
-                {/* {marker} */}
+                {marker}
               {marker2}
               {driverMarker}
               
@@ -355,29 +377,7 @@ class ProfileDriver extends Component {
                 data={this.state.driverProfile}
               />
               
-              {this.state.directionsDriverState == true ?
-                <TouchableOpacity opacity = "0.6"
-                onPress = {() => this.confirmRequest()}
-                style = {{ padding: 7, backgroundColor: "#F89D29", color: "#FFFFFF", flexDirection: "row" }} >   
-                <Icon name = "place"
-                style = {[icons.icon, { color: '#FFFFFF' }]}/> 
-                    <Text style = {{ color: "#fff", fontSize: 15 }}>Confirm </Text>
-                    
-                </TouchableOpacity>
-                :
-                <TouchableOpacity
-                opacity="0.6"
-                onPress={() =>this.requestDriverLocation()}
-                style={{padding:7,backgroundColor:"#F89D29",color:"#FFFFFF",flexDirection:"row"}}
-              >
-                <Icon name="place" style={[icons.icon,{color: '#FFFFFF'}]} />
-                {this.state.isFindingDistanceDriver == true ?
-                  <ActivityIndicator size="small" color="#FFFFFF" />:
-                  <Text style={{color:"#fff", fontSize:15}}>Find Driver</Text>
-                }
-                
-              </TouchableOpacity>
-              }
+              {buttomButtonFunction}
             
               <TouchableOpacity
                 opacity="0.6"
