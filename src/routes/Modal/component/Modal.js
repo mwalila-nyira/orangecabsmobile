@@ -153,7 +153,7 @@ class Booknow extends React.Component {
                         <ListItem>
                             {this.state.paymentMethod.map((method,index)=>{
                                return(    
-                                    <Body>
+                                    <Body key={index}>
                                     {this.state.checked == index ? 
                                         <TouchableOpacity 
                                             key={index}
