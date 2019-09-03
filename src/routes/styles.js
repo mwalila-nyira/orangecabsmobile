@@ -2,6 +2,7 @@ const React = require("react-native");
 const { Dimensions, Platform ,StyleSheet} = React;
 const deviceHeight = Dimensions.get("window").height;
 const deviceWidth = Dimensions.get("window").width;
+
 export default {
   imageContainer: {
     flex: 1,
@@ -187,5 +188,158 @@ export default {
     opacity:0.9,
     borderRadius:7,
     width:300
-  }
+  },
+  
+ //chat message
+ marioChat:{
+  maxWidth: 600,
+  marginLeft:0,
+  marginTop:0,
+  marginBottom:0,
+  borderWidth: 1,
+  borderColor:"#ddd",
+  // boxShadow: 1 3 5 rgba(0, 0, 0, 0.05),
+  borderRadius:2,
+},
+
+chatwindow:{
+  height: 400,
+  background: "#f9f9f9",
+},
+
+output:{
+  paddingTop: 14 ,
+  PaddingBottom:14,
+  paddingLeft:0,
+  paddingRight:0,
+  marginTop:0,
+  marginBottom:0,
+  marginLeft: 20,
+  marginRight:20,
+  borderBottom: 1,
+  borderColor:"#e9e9e9",
+  color: "#555",
+  // color: #575ed8,
+},
+
+feedback:{
+  color: "#aaa",
+  paddingTop: 14 ,
+  PaddingBottom:14,
+  paddingLeft:0,
+  paddingRight:0,
+  marginTop:0,
+  marginBottom:0,
+  marginLeft: 20,
+  marginRight:20,
+},
+
+// label :{
+//   boxSizing: 'borderBox',
+//   display: 'block',
+//   paddingTop: 10 ,
+//   PaddingBottom:10,
+//   paddingLeft:20,
+//   paddingRight:20,
+// },
+
+input: {
+  padding: 20,
+  backgroundColor: "#eee",
+  borderWidth:0.5,
+  borderColor:"#11A0DC",
+  flexDirection:'column',
+  width: "100%",
+  background: "#fff",
+  borderBottom: 1,
+  borderColor:"#eee",
+  fontFamily: 'Nunito',
+  fontSize: 16,
+},
+
+buttonMessage :{
+  backgroundColor: "#11A0DC",
+  color: "#fff",
+  fontSize: 18,
+  border: 0,
+  paddingTop: 12,
+  PaddingBottom:12,
+  paddingLeft:0,
+  paddingRight:0,
+  width: "100%",
+  borderRadius: 2,
+},
+
+
+//chat message okay
+containerMes:{
+  flex:1
+},
+list:{
+  paddingHorizontal: 17,
+},
+footer:{
+  flexDirection: 'row',
+  height:60,
+  backgroundColor: '#eeeeee',
+  paddingHorizontal:10,
+  padding:5,
+},
+btnSend:{
+  backgroundColor:"#11A0DC",
+  width:40,
+  height:40,
+  borderRadius:360,
+  alignItems:'center',
+  justifyContent:'center',
+},
+iconSend:{
+  width:30,
+  height:30,
+  alignSelf:'center',
+},
+inputContainer: {
+  borderBottomColor: '#F5FCFF',
+  backgroundColor: '#FFFFFF',
+  borderRadius:30,
+  borderBottomWidth: 1,
+  height:40,
+  flexDirection: 'row',
+  alignItems:'center',
+  flex:1,
+  marginRight:10,
+},
+inputs:{
+  height:40,
+  marginLeft:16,
+  borderBottomColor: '#FFFFFF',
+  flex:1,
+},
+balloon: {
+  maxWidth: 250,
+  padding: 15,
+  borderRadius: 20,
+},
+itemIn: {
+  alignSelf: 'flex-start',
+  backgroundColor:"#11A0DC"
+},
+itemOut: {
+  alignSelf: 'flex-end'
+},
+time: {
+  alignSelf: 'flex-end',
+  margin: 15,
+  fontSize:12,
+  color:"#808080",
+},
+item: {
+  marginVertical: 14,
+  flex: 1,
+  flexDirection: 'row',
+  backgroundColor:"#eeeeee",
+  borderRadius:300,
+  padding:5,
+},
+  
 };

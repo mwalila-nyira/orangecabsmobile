@@ -7,7 +7,13 @@ import {
     Dimensions,
     TouchableOpacity,
     StyleSheet,
-    StatusBar
+    StatusBar,
+    KeyboardAvoidingView,
+    Platform,
+    TouchableHighlight,
+    TextInput,
+    Button,
+    FlatList
 } from 'react-native';
 import {
   Container,
@@ -18,12 +24,11 @@ import {
   Right
 } from 'native-base';
 import styles from '../../styles';
-// import Icon from 'react-native-vector-icons/MaterialIcons';
+import Icons from 'react-native-vector-icons/MaterialIcons';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import { Actions } from 'react-native-router-flux';
 import io from 'socket.io-client';
 import {serverExp} from '../../config';
-import { GiftedChat } from 'react-native-gifted-chat'
 import moment from 'moment'
 
 
@@ -37,7 +42,11 @@ class MessageApp extends React.Component {
       carId:null,
       isConnect:null,
       username:null,
-      messages: [],
+      type:"",
+      date:"",
+      chatMessage:"",
+      isTyping:false,
+      messages: []
     }
   }
  
@@ -50,38 +59,73 @@ class MessageApp extends React.Component {
       carId:this.props.chatData.carId,
       isConnect:this.props.chatData.isConnect,
       username:this.props.chatData.username,
-      createdAt:moment().format('YYYY-MM-DD HH:mm')
+      date:moment().format('YY-M-DD HH:mm A')
     })
     
     //make socket io connection
     this.socket = io(`${serverExp}`);
     
     //listening from the server 
-    this.socket.on("chat message",msg=>{
-      this.setState({messages:[...this.state.messages,msg]})
+    this.socket.on('chatInComing',chatInComing => {
+      const data = {
+         type : chatInComing.type,
+         message : chatInComing.message,
+         date : chatInComing.date
+      } 
+      this.setState({messages:[...this.state.messages,data]});
+    })
+    
+    this.socket.on("chatOutComing",chatOutComing=>{
+      // console.log(chatOutComing);
+      if (chatOutComing.driverId == this.state.driverId && chatOutComing.tripId == this.state.tripId && chatOutComing.userId == this.state.userId) {
+        let type = "";
+        if (chatOutComing.type === 'out') {
+          type = chatOutComing.type = 'in';
+        } 
+        const dataOut ={
+           message : chatOutComing.message,
+           date : chatOutComing.date,
+           type:type
+        } 
+        this.setState({messages:[...this.state.messages,dataOut]})
+      }
+    })
+    
+    //listening for feedback onKeyPress
+    this.socket.on('typingDriver',typingDriverData =>{
+      if (typingDriverData.tripId == this.state.tripId && typingDriverData.driverId == this.state.driverId && typingDriverData.userId == this.state.userId) {
+        this.setState({isTyping:true});
+      }
     })
   }
   
-  
-  componentWillUnmount(){
-    
+  async _onSendMessage() {
+    const data = {
+      message:this.state.chatMessage,
+      tripId:this.state.tripId,
+      userId:this.state.userId,
+      driverId:this.state.driverId,
+      username:this.state.username,
+      date:this.state.date,
+      type:"out",
+    };
+    // submit message
+    this.socket.emit("chatInComing",data)
+    //clear the textinput box
+    this.setState({
+      isTyping:false,
+      chatMessage:""})
   }
   
-  
-  async _onSendMessage(messages = []) {
-    this.setState(previousState => ({
-      messages: GiftedChat.append(previousState.messages, messages),
-    }))
-    // alert(JSON.stringify(messages))
-    // submit message
-    this.socket.emit("chat message",this.state.messages)
-    //clear the textinput box
-    this.setState({chatMessage:""})
+  renderDate = (date) => {
+    return(
+      <Text style={styles.time}>
+        {date}
+      </Text>
+    );
   }
 
   render() {
-    const chatmessage = this.state.messages.map((msg)=>
-      <Text key={msg}>{msg}</Text>)
       
     return (
       <Container>
@@ -98,7 +142,11 @@ class MessageApp extends React.Component {
               </TouchableOpacity>
             </Left>
             <Body>
-                <Text style={[styles.headerText, {color: '#333'}]}>Chat with :   {this.state.username} </Text>                        
+              {this.state.isTyping == true ?
+                <Text style={[styles.headerText, {color: '#333'}]}>Chat with :  {this.state.username} typing ...</Text>
+                :
+                <Text style={[styles.headerText, {color: '#333'}]}>Chat with :  {this.state.username}</Text>
+                }                        
             </Body>
             <Right>
               {this.state.isConnect == 1 ?
@@ -108,31 +156,65 @@ class MessageApp extends React.Component {
               }
             </Right>
         </Header>
-        
-        <GiftedChat
-          messages={this.state.messages}
-          onSend={(messages) => {
-            //send message to the backend
-            this._onSendMessage(messages)
-          }
-          }
-          // _id={}
-          user={{
-            _id:this.state.userId,
-            from: this.state.userId,
-            to: this.state.driverId,
-            username:this.state.username,
-            tripid:this.state.tripId,
-            carid: this.state.car_id
-            
-          }}
-          showUserAvatar
-        />
+ 
+        <View style={styles.containerMes}>
+            <FlatList style={styles.list}
+              data={this.state.messages}
+              keyExtractor={(item,index) => index.toString()}
+              renderItem={(message) => {
+                // console.log(item);
+                const item = message.item;
+                let inMessage = item.type === 'in';
+                let itemStyle = inMessage ? styles.itemIn : styles.itemOut;
+                return (
+                  <View style={[styles.item, itemStyle]}>
+                    {!inMessage && this.renderDate(item.date)}
+                    <View style={[styles.balloon]}>
+                      <Text>{item.message}</Text>
+                    </View>
+                    {inMessage && this.renderDate(item.date)}
+                  </View>
+                )
+              }}/>
+            <View style={styles.footer}>
+              <View style={styles.inputContainer}>
+                <TextInput style={styles.inputs}
+                    placeholder="Write a message..."
+                    underlineColorAndroid='transparent'
+                    multiline={true}
+                    autoCorrect= {false}
+                    onChangeText={(chatMessage) => this.setState({chatMessage})}
+                    value={this.state.chatMessage}
+                    onSubmitEditing={() =>{ 
+                      this._onSendMessage();
+                      this.setState({isTyping:false})
+                    }}
+                    onKeyPress={() => { 
+                      this.socket.emit('typingRider',{driverId:this.state.driverId,
+                      userId:this.state.userId,
+                      tripId:this.state.tripId,
+                     });
+                     this.setState({isTyping:false})
+                  }}
+                    />
+              </View>
+
+                <TouchableOpacity 
+                  style={styles.btnSend}
+                  onPress={() => this._onSendMessage()}
+                >
+
+                  <Icons name="send" sstyle={[styles.iconSend,{color: '#FFFFFF',fontSize:30}]}/>
+                  
+                </TouchableOpacity>
+              </View>
+          </View>
+          
       </Container>
       
     );
   }
 }
 
-
 export default MessageApp;
+

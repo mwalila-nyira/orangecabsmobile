@@ -14,13 +14,13 @@
       android:allowBackup="false"
       android:theme="@style/AppTheme">
       
-      <!-- <meta-data
-        android:name="com.google.android.geo.API_KEY"
-        android:value="AIzaSyB-1SZLcvFN_cxb2HXrmtf7EhfA2O94SUs"/> -->
+     <meta-data
+       android:name="com.google.android.geo.API_KEY"
+       android:value="AIzaSyB-1SZLcvFN_cxb2HXrmtf7EhfA2O94SUs"/>
         
-      <meta-data
+       <!-- <meta-data
         android:name="com.google.android.geo.API_KEY"
-        android:value="@string/google_api_key"/>
+        android:value="@string/google_api_key"/> -->
 
         <activity
             android:name=".SplashActivity"
