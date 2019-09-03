@@ -239,7 +239,7 @@ class Booknow extends React.Component {
                             <Text style={styles.buttonText}>Book and go</Text>
                             </TouchableOpacity>
                             {this.state.isLoading == true && 
-                                <ActivityIndicator size="large" color="#F89D29" />}
+                                <ActivityIndicator size="small" color="#F89D29" />}
 
                             <TouchableOpacity style={[styles.buttonSignup,{marginBottom:10}]}
                                 underlayColor={'transparent'}
@@ -249,7 +249,7 @@ class Booknow extends React.Component {
                                 <Text style={[styles.buttonTextSignup, {color: '#F89D29'}]}>Cancel</Text>
                             </TouchableOpacity>
                             {this.state.isCancelled == true && 
-                                <ActivityIndicator size="large" color="#F89D29" />}
+                                <ActivityIndicator size="small" color="#F89D29" />}
 
                         </View>
                 </KeyboardAvoidingView>
@@ -262,8 +262,8 @@ class Booknow extends React.Component {
                             <Text style={{fontSize:12, color:"grey"}}>Help</Text>
                         </Button>
                         <Button vertical onPress={() => Actions.profile()}>
-                            <Icon active name="envelope-o" size={20} color={"#11A0DC"} />
-                            <Text style={{fontSize:12, color:"grey"}}>Message</Text>
+                            <Icons active name="person" size={25} color={"#11A0DC"} />
+                            <Text style={{fontSize:12, color:"grey"}}>Profile</Text>
                         </Button>
 
                     </FooterTab>

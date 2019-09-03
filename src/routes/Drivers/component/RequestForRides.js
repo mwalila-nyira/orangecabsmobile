@@ -51,7 +51,8 @@ class RequestForRides extends React.Component {
       
       //declarations of variable to send to server via socket for getting rider distance
       modalVisible : false,
-      datafindrider:{}
+      datafindrider:{},
+      isSendMessage:false
 
     };
     this.intervalID
@@ -177,16 +178,21 @@ class RequestForRides extends React.Component {
   }
   
   //chat message
-  _sendMessage = async (trip_id, user_id,isconnect, username) => {
-    this.setState({
-      chatDataId:{
-        tripId:trip_id,
-        userId:user_id,
-        isconnect:isconnect,
-        username:username,
-      }
-    })
-    Actions.messageDriver({chatData:this.state.chatDataId})
+  _sendMessage = async (trip_id, user_id,driver_id,isconnect,username) => {
+    this.setState({isSendMessage:true});
+    setTimeout(() => {
+      this.setState({
+        chatDataId:{
+          tripId:trip_id,
+          userId:user_id,
+          driverId:driver_id,
+          isconnect:isconnect,
+          username:username,
+        }
+      })
+      Actions.messageDriver({chatData:this.state.chatDataId})
+    }, 2000);
+    
   }
   
   //Logoutapp
@@ -321,7 +327,7 @@ class RequestForRides extends React.Component {
 
                               <TouchableOpacity 
                                 opacity="0.6"
-                                onPress={() => this._sendMessage(item.trip_id,item.user_id,item.is_connect,item.username)}
+                                onPress={() => this._sendMessage(item.trip_id,item.user_id,item.driver_id,item.is_connect,item.username)}
                                 style={{flexDirection:"row"}}
                               >
                                 <Icon name="chat" style={[styles.icon,{color: '#11A0DC',fontSize:30}]} />

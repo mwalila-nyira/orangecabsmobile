@@ -78,13 +78,32 @@ let riderSocket = null;
 //chat with socket io and user connected
 //socket io server connection
 io.on("connection", socket => {
-	console.log("a user connected :" +socket.id);
-    //chat message 
-    // socket.on("chat message",msg=>{
-    //     console.log(msg)
+    console.log("a user connected :" +socket.id);
+    
+    //chat Out 
+    socket.on("chatOutComing", chatOutComing =>{
+        console.log(chatOutComing.driverId +'send Message')
+        console.log(JSON.stringify(chatOutComing));
+        // io.emit('chatOutComing',chatOutComing);
         
-    //     io.sockets.emit("chat message",msg)
-    // })
+        io.sockets.emit("chatOutComing",chatOutComing);
+    });
+    
+    socket.on('typingDriver', (typingDriverData) => {
+        //send data to the other client connect to the server espect the sender of the message
+        socket.broadcast.emit('typingDriver', typingDriverData)
+    })
+    
+    socket.on('typingRider',typingRiderData=> {
+        //send data to the other client connect to the server espect the sender of the message
+        socket.broadcast.emit('typingRider', typingRiderData)
+    })
+    
+    socket.on('chatInComing',(chatInComing) =>{
+        console.log(chatInComing.userId +'send Message')
+        console.log(chatInComing);
+        io.sockets.emit('chatInComing', chatInComing)
+    })
     
     //request a taxi rider side
     socket.on("taxiRequest", routeResponse => {

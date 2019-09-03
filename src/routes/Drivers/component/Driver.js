@@ -390,7 +390,7 @@ export default class ProfileDriver extends Component {
                     <View 
                         style={[styles.directionContainer, { flexDirection: "row", justifyContent: "space-around"}]}>
                             
-                        <RideModal data = { this.props.data }/>
+                        <RideModal data = { this.props.data } />
 
                             {this.state.isriderfound == true ?
                             <TouchableOpacity opacity = "0.6"
